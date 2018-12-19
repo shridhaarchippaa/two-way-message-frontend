@@ -16,16 +16,16 @@
 
 package controllers
 
-import uk.gov.hmrc.http.cache.client.CacheMap
-import base.SpecBase
+import com.google.inject.Inject
+import play.api.mvc.{Action, AnyContent}
+import play.api.i18n.{I18nSupport, MessagesApi}
+import config.FrontendAppConfig
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-trait ControllerSpecBase extends SpecBase {
-
-  val cacheMapId = "id"
-
-  def emptyCacheMap = CacheMap(cacheMapId, Map())
-
-  // def getEmptyCacheMap = new FakeDataRetrievalAction(Some(emptyCacheMap))
-
-  // def dontGetAnyData = new FakeDataRetrievalAction(None)
+class HelloWorldController @Inject()(appConfig: FrontendAppConfig,
+                                           override val messagesApi: MessagesApi) extends FrontendController with I18nSupport {
+  def onPageLoad(): Action[AnyContent]  = Action {implicit request =>
+      Ok("Hello Wolrd!")
+  }
+  
 }

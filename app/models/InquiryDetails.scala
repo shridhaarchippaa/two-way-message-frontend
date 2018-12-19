@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package controllers
+package models
 
-import uk.gov.hmrc.http.cache.client.CacheMap
-import base.SpecBase
+import play.api.libs.json._
 
-trait ControllerSpecBase extends SpecBase {
+case class InquiryDetails (queue: String, subject: String, text: String)
 
-  val cacheMapId = "id"
-
-  def emptyCacheMap = CacheMap(cacheMapId, Map())
-
-  // def getEmptyCacheMap = new FakeDataRetrievalAction(Some(emptyCacheMap))
-
-  // def dontGetAnyData = new FakeDataRetrievalAction(None)
+object InquiryDetails {
+  implicit val format = Json.format[InquiryDetails]
 }

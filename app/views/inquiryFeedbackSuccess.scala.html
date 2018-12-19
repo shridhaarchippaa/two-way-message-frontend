@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package controllers
+@import config.FrontendAppConfig
 
-import uk.gov.hmrc.http.cache.client.CacheMap
-import base.SpecBase
+@(appConfig: FrontendAppConfig)(implicit request: Request[_], messages: Messages)
 
-trait ControllerSpecBase extends SpecBase {
+@main_template(
+    title = messages("feedbackSuccess.title"),
+    appConfig = appConfig,
+    bodyClasses = None) {
 
-  val cacheMapId = "id"
+    @components.heading("inquiry.feedbackSuccess.heading")
 
-  def emptyCacheMap = CacheMap(cacheMapId, Map())
-
-  // def getEmptyCacheMap = new FakeDataRetrievalAction(Some(emptyCacheMap))
-
-  // def dontGetAnyData = new FakeDataRetrievalAction(None)
+    <a id="start-again" href="@routes.InquiryController.onPageLoad()" class="button">@messages("site.startAgain")</a>
 }

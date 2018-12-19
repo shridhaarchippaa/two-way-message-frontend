@@ -14,18 +14,25 @@
  * limitations under the License.
  */
 
-package controllers
+package forms
 
-import uk.gov.hmrc.http.cache.client.CacheMap
-import base.SpecBase
+import javax.inject.Inject
 
-trait ControllerSpecBase extends SpecBase {
+import forms.mappings.Mappings
+import play.api.data.{Form, Mapping}
+import play.api.data.Forms._
+import models.InquiryDetails
+import utils.InputOption
 
-  val cacheMapId = "id"
+class InquiryFormProvider @Inject() extends FormErrorHelper with Mappings {
 
-  def emptyCacheMap = CacheMap(cacheMapId, Map())
+  def apply(queueOptions: Seq[InputOption]): Form[InquiryDetails] =
+    Form(
+      mapping(
+        "queue" -> text(),
+        "subject" -> text(),
+        "content" -> text()
+      )(InquiryDetails.apply)(InquiryDetails.unapply)
+    )
 
-  // def getEmptyCacheMap = new FakeDataRetrievalAction(Some(emptyCacheMap))
-
-  // def dontGetAnyData = new FakeDataRetrievalAction(None)
 }

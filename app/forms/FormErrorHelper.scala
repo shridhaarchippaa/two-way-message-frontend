@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-package controllers
+package forms
 
-import uk.gov.hmrc.http.cache.client.CacheMap
-import base.SpecBase
+import play.api.data.FormError
 
-trait ControllerSpecBase extends SpecBase {
-
-  val cacheMapId = "id"
-
-  def emptyCacheMap = CacheMap(cacheMapId, Map())
-
-  // def getEmptyCacheMap = new FakeDataRetrievalAction(Some(emptyCacheMap))
-
-  // def dontGetAnyData = new FakeDataRetrievalAction(None)
+trait FormErrorHelper {
+  def produceError(key: String, error: String) = Left(Seq(FormError(key, error)))
 }
