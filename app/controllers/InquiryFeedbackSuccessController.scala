@@ -16,16 +16,18 @@
 
 package controllers
 
-import uk.gov.hmrc.http.cache.client.CacheMap
-import base.SpecBase
+import javax.inject.Inject
+import play.api.i18n.{I18nSupport, MessagesApi}
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import config.FrontendAppConfig
+import play.api.mvc.Action
+import views.html.inquiryFeedbackSuccess
 
-trait ControllerSpecBase extends SpecBase {
+class InquiryFeedbackSuccessController @Inject()(appConfig: FrontendAppConfig,
+                                         override val messagesApi: MessagesApi) extends FrontendController with I18nSupport {
 
-  val cacheMapId = "id"
-
-  def emptyCacheMap = CacheMap(cacheMapId, Map())
-
-  // def getEmptyCacheMap = new FakeDataRetrievalAction(Some(emptyCacheMap))
-
-  // def dontGetAnyData = new FakeDataRetrievalAction(None)
+  def onPageLoad = Action {
+    implicit request =>
+      Ok(inquiryFeedbackSuccess(appConfig))
+  }
 }

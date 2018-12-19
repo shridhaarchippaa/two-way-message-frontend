@@ -14,18 +14,6 @@
  * limitations under the License.
  */
 
-package controllers
+package utils
 
-import uk.gov.hmrc.http.cache.client.CacheMap
-import base.SpecBase
-
-trait ControllerSpecBase extends SpecBase {
-
-  val cacheMapId = "id"
-
-  def emptyCacheMap = CacheMap(cacheMapId, Map())
-
-  // def getEmptyCacheMap = new FakeDataRetrievalAction(Some(emptyCacheMap))
-
-  // def dontGetAnyData = new FakeDataRetrievalAction(None)
-}
+case class InputOption(value: String, label: String, dataTarget: Option[String] = None)
