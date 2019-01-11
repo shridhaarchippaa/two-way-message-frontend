@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package models
 
 import play.api.libs.json._
 
-case class InquiryDetails (queue: String, subject: String, text: String)
+case class InquiryDetails (queue: String, email: String, subject: String, text: String)
 
 object InquiryDetails {
   implicit val format = Json.format[InquiryDetails]

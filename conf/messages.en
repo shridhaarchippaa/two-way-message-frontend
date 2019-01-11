@@ -51,8 +51,9 @@ inquiry.dropdown.p2 = Help with Child Care
 inquiry.dropdown.p3 = Other Query
 inquiry.feedbackSuccess.heading = Thank you for your inquiry!
 
-inquiry.content = Your question:
+inquiry.email = Email:
 inquiry.subject = Subject:
+inquiry.content = Your question:
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account

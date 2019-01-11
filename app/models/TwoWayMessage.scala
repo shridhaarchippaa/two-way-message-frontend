@@ -1,5 +1,5 @@
-@*
- * Copyright 2018 HM Revenue & Customs
+/*
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,18 +12,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import config.FrontendAppConfig
+package models
 
-@(appConfig: FrontendAppConfig)(implicit request: Request[_], messages: Messages)
+import play.api.libs.json.{Json, Reads, Writes}
 
-@main_template(
-    title = messages("feedbackSuccess.title"),
-    appConfig = appConfig,
-    bodyClasses = None) {
+case class ContactDetails(email: String)
 
-    @components.heading("inquiry.feedbackSuccess.heading")
+object ContactDetails {
 
-    <a id="start-again" href="@routes.InquiryController.onPageLoad()" class="button">@messages("site.startAgain")</a>
+  implicit val format = Json.format[ContactDetails]
 }
+
+case class TwoWayMessage(contactDetails: ContactDetails, subject: String, content: String, replyTo: Option[String] = None)
+
+object TwoWayMessage {
+
+  implicit val format = Json.format[TwoWayMessage]
+}
+
+
+

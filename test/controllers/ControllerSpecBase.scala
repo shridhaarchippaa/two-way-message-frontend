@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,15 @@
 
 package controllers
 
-import uk.gov.hmrc.http.cache.client.CacheMap
 import base.SpecBase
+import config.{AppConfig, FrontendAppConfig}
+import forms.InquiryFormProvider
+import play.api.i18n.{Messages, MessagesApi}
 
 trait ControllerSpecBase extends SpecBase {
 
-  val cacheMapId = "id"
-
-  def emptyCacheMap = CacheMap(cacheMapId, Map())
-
-  // def getEmptyCacheMap = new FakeDataRetrievalAction(Some(emptyCacheMap))
-
-  // def dontGetAnyData = new FakeDataRetrievalAction(None)
+  lazy val appConfig: AppConfig = injector.instanceOf[FrontendAppConfig]
+  lazy val messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
+  lazy val formProvider: InquiryFormProvider = injector.instanceOf[InquiryFormProvider]
+  lazy val messages: Messages = messagesApi.preferred(fakeRequest)
 }

@@ -5,7 +5,6 @@ GET        /assets/*file                controllers.Assets.versioned(path="/publ
 
 GET        /message/make_inquiry         controllers.InquiryController.onPageLoad()
 POST       /message/submit               controllers.InquiryController.onSubmit()
-GET        /message/feedback             controllers.InquiryFeedbackSuccessController.onPageLoad()
-GET        /hello-world                  controllers.HelloWorldController.onPageLoad
+GET        /message/submitted            controllers.InquirySubmittedController.onPageLoad()
 
 GET        /language/:lang               controllers.LanguageSwitchController.switchToLanguage(lang: String)
