@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@
 package config
 
 import com.google.inject.AbstractModule
+import net.codingwell.scalaguice.ScalaModule
 
-class Module extends AbstractModule {
+class Module extends AbstractModule with ScalaModule {
 
   override def configure(): Unit = {
-
+    bind(classOf[AppConfig]).to(classOf[FrontendAppConfig]).asEagerSingleton()
   }
 }

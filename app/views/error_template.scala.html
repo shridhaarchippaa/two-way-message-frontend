@@ -1,5 +1,5 @@
 @*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 @import config.FrontendAppConfig
 
-@(pageTitle: String, heading: String, message: String, appConfig: FrontendAppConfig)(implicit request: Request[_], messages: Messages)
+@import config.AppConfig
+@(pageTitle: String, heading: String, message: String, appConfig: AppConfig)(implicit request: Request[_], messages: Messages)
 
 @contentHeader = {
   <h1>@heading</h1>
@@ -26,4 +27,4 @@
   <p>@message</p>
 }
 
-@govuk_wrapper(appConfig = appConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)
+@govuk_wrapper(appConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)

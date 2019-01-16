@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,28 @@ import com.google.inject.{Inject, Singleton}
 import play.api.{Configuration, Environment}
 import play.api.i18n.Lang
 import controllers.routes
+import play.api.mvc.Call
 import uk.gov.hmrc.play.config.ServicesConfig
 
+trait AppConfig {
+
+  val analyticsToken: String
+  val analyticsHost: String
+  val reportAProblemPartialUrl: String
+  val reportAProblemNonJSUrl: String
+  val betaFeedbackUrl: String
+  val betaFeedbackUnauthenticatedUrl: String
+  val authUrl: String
+  val loginUrl: String
+  val loginContinueUrl: String
+  val languageTranslationEnabled: Boolean
+
+  def languageMap: Map[String, Lang]
+  def routeToSwitchLanguage: String => Call
+}
+
 @Singleton
-class FrontendAppConfig @Inject() (override val runModeConfiguration: Configuration, environment: Environment) extends ServicesConfig {
+class FrontendAppConfig @Inject() (override val runModeConfiguration: Configuration, environment: Environment) extends AppConfig with ServicesConfig {
 
   override protected def mode = environment.mode
 
@@ -47,5 +65,5 @@ class FrontendAppConfig @Inject() (override val runModeConfiguration: Configurat
   def languageMap: Map[String, Lang] = Map(
     "english" -> Lang("en"),
     "cymraeg" -> Lang("cy"))
-  def routeToSwitchLanguage = (lang: String) => routes.LanguageSwitchController.switchToLanguage(lang)
+  def routeToSwitchLanguage: String => Call = (lang: String) => routes.LanguageSwitchController.switchToLanguage(lang)
 }

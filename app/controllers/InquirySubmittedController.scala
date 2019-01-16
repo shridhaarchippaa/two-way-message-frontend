@@ -16,18 +16,26 @@
 
 package controllers
 
-import javax.inject.Inject
-
+import javax.inject.{Inject, Singleton}
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import config.FrontendAppConfig
-import views.html.index
+import config.AppConfig
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
+import views.html.inquirySubmitted
 
-class IndexController @Inject()(val appConfig: FrontendAppConfig,
-                                val messagesApi: MessagesApi) extends FrontendController with I18nSupport {
+import scala.concurrent.Future
 
-  def onPageLoad: Action[AnyContent] = Action { implicit request =>
-    Ok(index(appConfig))
+@Singleton
+class InquirySubmittedController @Inject()(appConfig: AppConfig,
+                                           val authConnector: AuthConnector,
+                                           override val messagesApi: MessagesApi)
+  extends FrontendController with AuthorisedFunctions with I18nSupport {
+
+  def onPageLoad: Action[AnyContent] = Action.async {
+    implicit request =>
+      authorised(Enrolment("HMRC-NI")) {
+        Future.successful(Ok(inquirySubmitted(appConfig)))
+      }
   }
 }

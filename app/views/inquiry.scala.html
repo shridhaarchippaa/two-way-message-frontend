@@ -1,5 +1,5 @@
 @*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  * limitations under the License.
  *@
 
-@import config.FrontendAppConfig
+@import config.AppConfig
 @import uk.gov.hmrc.play.views.html._
 @import controllers.routes._
 @import utils.FormHelpers
 
 @import utils.InputOption
 
-@(appConfig: FrontendAppConfig, form: Form[_], options: Seq[InputOption] )(implicit request: Request[_], messages: Messages)
+@(appConfig: AppConfig, form: Form[_], options: Seq[InputOption] )(implicit request: Request[_], messages: Messages)
 
 @main_template(
     title = messages("inquiry.title"),
@@ -41,6 +41,11 @@
                label = messages("inquiry.whatis"),
                options = options,
                formGroupClasses = Set("autocomplete-wrapper")
+           )
+
+           @components.input_text(
+               field = form("email"),
+               label = messages("inquiry.email")
            )
 
            @components.input_text(
