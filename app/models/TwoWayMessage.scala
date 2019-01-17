@@ -16,7 +16,10 @@
 
 package models
 
-import play.api.libs.json.{Json, Reads, Writes}
+import org.apache.commons.codec.binary.Base64
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
+import play.api.libs.functional._
 
 case class ContactDetails(email: String)
 
@@ -29,8 +32,15 @@ case class TwoWayMessage(contactDetails: ContactDetails, subject: String, conten
 
 object TwoWayMessage {
 
-  implicit val format = Json.format[TwoWayMessage]
+  implicit val twoWayMessageWrites: Writes[TwoWayMessage] = (
+    (__ \ "contactDetails").write[ContactDetails] and
+      (__ \ "subject").write[String] and
+      (__ \ "content").write[String] and
+      (__ \ "replyTo").writeNullable[String]
+    ) ((m: TwoWayMessage) =>
+      (m.contactDetails, m.subject, new String(Base64.encodeBase64String(m.content.getBytes("UTF-8"))), m.replyTo))
 }
+
 
 
 
