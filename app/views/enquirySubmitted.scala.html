@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +12,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models
+@import config.AppConfig
 
-import play.api.libs.json._
+@(appConfig: AppConfig, ref: String)(implicit request: Request[_], messages: Messages)
 
-case class InquiryDetails (queue: String, email: String, subject: String, text: String)
+@main_template(
+    title = messages("enquiry.feedbackSuccess.title"),
+    appConfig,
+    bodyClasses = None) {
 
-object InquiryDetails {
-  implicit val format = Json.format[InquiryDetails]
+    @components.heading("enquiry.feedbackSuccess.heading")
+
+    <p>Your enquiry reference number is: @ref</p>
+
+    <a id="start-again" href="@routes.EnquiryController.messagesRedirect()" class="button">@messages("site.startAgain")</a>
 }

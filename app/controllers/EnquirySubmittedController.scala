@@ -16,26 +16,34 @@
 
 package controllers
 
+import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
+import models.{Identifier, MessageError}
 import play.api.i18n.{I18nSupport, MessagesApi}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import config.AppConfig
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
-import views.html.inquirySubmitted
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import views.html.{enquirySubmitted, error_template}
 
 import scala.concurrent.Future
 
 @Singleton
-class InquirySubmittedController @Inject()(appConfig: AppConfig,
+class EnquirySubmittedController @Inject()(appConfig: AppConfig,
                                            val authConnector: AuthConnector,
-                                           override val messagesApi: MessagesApi)
+                                           override val messagesApi: MessagesApi,
+                                           errorHandler: ErrorHandler)
   extends FrontendController with AuthorisedFunctions with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = Action.async {
+  def onPageLoad(maybeId: Option[Identifier], maybeError: Option[MessageError]): Action[AnyContent] = Action.async {
     implicit request =>
       authorised(Enrolment("HMRC-NI")) {
-        Future.successful(Ok(inquirySubmitted(appConfig)))
+        maybeId match {
+          case Some(identifier) => Future.successful(Ok(enquirySubmitted(appConfig, identifier.id)))
+          case _ => maybeError match {
+            case Some(error) => Future.successful(Ok(error_template("Error", "There was an error:", error.text, appConfig)))
+            case _ => Future.successful(Ok(error_template("Error", "Missing reference number!","", appConfig)))
+          }
+        }
       }
   }
 }

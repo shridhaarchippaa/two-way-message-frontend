@@ -25,6 +25,8 @@
 
 @mainContent = {
   <p>@message</p>
+
+  <a id="start-again" href="@routes.EnquiryController.messagesRedirect()" class="button">@messages("site.startAgain")</a>
 }
 
 @govuk_wrapper(appConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)

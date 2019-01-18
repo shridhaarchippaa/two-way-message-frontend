@@ -9,6 +9,7 @@ object AppDependencies {
     "uk.gov.hmrc" %% "play-reactivemongo" % "6.2.0",
     "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
     "uk.gov.hmrc" %% "govuk-template" % "5.3.0",
+    "uk.gov.hmrc" %% "auth-client" % "2.18.0-play-25",
     "uk.gov.hmrc" %% "play-health" % "3.6.0-play-25",
     "uk.gov.hmrc" %% "play-ui" % "7.22.0",
     "uk.gov.hmrc" %% "http-caching-client" % "7.1.0",

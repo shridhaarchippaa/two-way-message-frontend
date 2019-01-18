@@ -22,35 +22,37 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import config.AppConfig
 import connectors.TwoWayMessageConnector
-import forms.InquiryFormProvider
+import forms.EnquiryFormProvider
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment, InsufficientEnrolments}
 import play.api.mvc.{Action, AnyContent}
-import views.html.inquiry
+import views.html.enquiry
 
 import scala.concurrent.Future
 import utils.InputOption
-import models.InquiryDetails
+import models.{EnquiryDetails, MessageError, Identifier}
+import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.http.HttpResponse
 
 @Singleton
-class InquiryController @Inject()(appConfig: AppConfig,
+class EnquiryController @Inject()(appConfig: AppConfig,
                                   override val messagesApi: MessagesApi,
-                                  formProvider: InquiryFormProvider,
+                                  formProvider: EnquiryFormProvider,
                                   val authConnector: AuthConnector,
                                   twoWayMessageConnector: TwoWayMessageConnector)
   extends FrontendController with AuthorisedFunctions with I18nSupport {
 
   def options: Seq[InputOption] = Seq(
-    InputOption("queue1", "inquiry.dropdown.p1", Some("vat_vat-form")),
-    InputOption("queue2", "inquiry.dropdown.p2", None),
-    InputOption("queue99", "inquiry.dropdown.p3", None)
+    InputOption("queue1", "enquiry.dropdown.p1", Some("vat_vat-form")),
+    InputOption("queue2", "enquiry.dropdown.p2", None),
+    InputOption("queue99", "enquiry.dropdown.p3", None)
   )
 
-  val form: Form[InquiryDetails] = formProvider(options)
+  val form: Form[EnquiryDetails] = formProvider(options)
 
   def onPageLoad(): Action[AnyContent] = Action.async {
     implicit request =>
       authorised(Enrolment("HMRC-NI")) {
-        Future.successful(Ok(inquiry(appConfig, form, options)))
+        Future.successful(Ok(enquiry(appConfig, form, options)))
       } recoverWith {
         case InsufficientEnrolments(msg) => Future.successful(Unauthorized(msg))
       }
@@ -62,14 +64,27 @@ class InquiryController @Inject()(appConfig: AppConfig,
         form.bindFromRequest().fold(
           (formWithErrors: Form[_]) =>
             Future.successful(BadRequest("Form error")),
-
-          inquiryDetails => {
-            twoWayMessageConnector.postMessage(inquiryDetails).map(response => response.status match {
-              case CREATED => Redirect(routes.InquirySubmittedController.onPageLoad())
-              case _ => BadGateway("Error sending inquiry details")
-            })
-          }
+              enquiryDetails => {
+                twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
+                  case CREATED => extractId(response) match {
+                    case Right(id) => Redirect(routes.EnquirySubmittedController.onPageLoad(Some(id), None))
+                    case Left(error) => Redirect(routes.EnquirySubmittedController.onPageLoad(None, Some(error)))
+                    }
+                  case _ => Redirect(routes.EnquirySubmittedController.onPageLoad(None,Some(MessageError("Error sending enquiry details"))))
+                })
+              }
         )
       }
+  }
+
+  def messagesRedirect = Action {
+    Redirect(appConfig.messagesFrontend)
+  }
+
+  def extractId(response: HttpResponse): Either[MessageError,Identifier] = {
+    response.json.validate[Identifier].asOpt match {
+      case Some(identifier) => Right(identifier)
+      case None => Left(MessageError("Missing reference"))
+    }
   }
 }

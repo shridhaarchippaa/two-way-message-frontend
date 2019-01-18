@@ -14,26 +14,13 @@
  * limitations under the License.
  */
 
-package forms
+package models
 
-import javax.inject.Inject
+import play.api.libs.json._
 
-import forms.mappings.Mappings
-import play.api.data.{Form, Mapping}
-import play.api.data.Forms._
-import models.InquiryDetails
-import utils.InputOption
+case class EnquiryDetails(queue: String, email: String, subject: String, text: String)
 
-class InquiryFormProvider @Inject() extends FormErrorHelper with Mappings {
 
-  def apply(queueOptions: Seq[InputOption]): Form[InquiryDetails] =
-    Form(
-      mapping(
-        "queue" -> text(),
-        "email" -> text(),
-        "subject" -> text(),
-        "content" -> text()
-      )(InquiryDetails.apply)(InquiryDetails.unapply)
-    )
-
+object EnquiryDetails {
+  implicit val format = Json.format[EnquiryDetails]
 }

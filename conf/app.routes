@@ -1,10 +1,11 @@
 # microservice specific routes
 
-GET        /                            controllers.IndexController.onPageLoad
-GET        /assets/*file                controllers.Assets.versioned(path="/public", file: Asset)
+GET         /                           controllers.IndexController.onPageLoad
+GET         /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
-GET        /message/make_inquiry         controllers.InquiryController.onPageLoad()
-POST       /message/submit               controllers.InquiryController.onSubmit()
-GET        /message/submitted            controllers.InquirySubmittedController.onPageLoad()
+GET         /message/make_enquiry       controllers.EnquiryController.onPageLoad()
+POST        /message/submit             controllers.EnquiryController.onSubmit()
+GET         /message/submitted          controllers.EnquirySubmittedController.onPageLoad(maybeId: Option[Identifier],maybeError: Option[MessageError])
 
-GET        /language/:lang               controllers.LanguageSwitchController.switchToLanguage(lang: String)
+GET         /language/:lang             controllers.LanguageSwitchController.switchToLanguage(lang: String)
+GET         /messages                   controllers.EnquiryController.messagesRedirect()

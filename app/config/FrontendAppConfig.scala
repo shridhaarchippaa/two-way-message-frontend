@@ -31,6 +31,7 @@ trait AppConfig {
   val reportAProblemNonJSUrl: String
   val betaFeedbackUrl: String
   val betaFeedbackUnauthenticatedUrl: String
+  val messagesFrontend: String
   val authUrl: String
   val loginUrl: String
   val loginContinueUrl: String
@@ -48,6 +49,7 @@ class FrontendAppConfig @Inject() (override val runModeConfiguration: Configurat
   private def loadConfig(key: String) = runModeConfiguration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
 
   private lazy val contactHost = runModeConfiguration.getString("contact-frontend.host").getOrElse("")
+  private lazy val personalTaxHost = runModeConfiguration.getString("personal-account.host").getOrElse("")
   private val contactFormServiceIdentifier = "twowaymessagefrontend"
 
   lazy val analyticsToken = loadConfig(s"google-analytics.token")
@@ -56,6 +58,7 @@ class FrontendAppConfig @Inject() (override val runModeConfiguration: Configurat
   lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
   lazy val betaFeedbackUrl = s"$contactHost/contact/beta-feedback"
   lazy val betaFeedbackUnauthenticatedUrl = s"$contactHost/contact/beta-feedback-unauthenticated"
+  lazy val messagesFrontend = s"$personalTaxHost/personal-account/messages"
 
   lazy val authUrl = baseUrl("auth")
   lazy val loginUrl = loadConfig("urls.login")

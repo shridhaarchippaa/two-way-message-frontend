@@ -30,7 +30,7 @@ import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment}
 
 import scala.concurrent.Future
 
-class InquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
+class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
   override def fakeApplication(): Application = {
     val mockTwoWayMessageConnector = mock[TwoWayMessageConnector]
@@ -45,7 +45,7 @@ class InquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
       .build()
   }
 
-  val controller = injector.instanceOf[InquiryController]
+  val controller = injector.instanceOf[EnquiryController]
 
 //  "calling onPageLoad()" should {
 //    "return 200 for a successful call with a Nino (HMRC-NI) enrolment from auth-client" in {
