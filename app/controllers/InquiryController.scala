@@ -50,9 +50,8 @@ class InquiryController @Inject()(appConfig: AppConfig,
   def onPageLoad(): Action[AnyContent] = Action.async {
     implicit request =>
       authorised(Enrolment("HMRC-NI")) {
-        Future.successful(Ok(inquiry(appConfig, form, options)))
-      } recoverWith {
-        case InsufficientEnrolments(msg) => Future.successful(Unauthorized(msg))
+        val result = Ok(inquiry(appConfig, form, options))
+        Future.successful(result)
       }
   }
 
@@ -60,7 +59,7 @@ class InquiryController @Inject()(appConfig: AppConfig,
     implicit request =>
       authorised(Enrolment("HMRC-NI")) {
         form.bindFromRequest().fold(
-          (formWithErrors: Form[_]) =>
+          (_: Form[_]) =>
             Future.successful(BadRequest("Form error")),
 
           inquiryDetails => {

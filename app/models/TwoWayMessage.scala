@@ -38,7 +38,10 @@ object TwoWayMessage {
       (__ \ "content").write[String] and
       (__ \ "replyTo").writeNullable[String]
     ) ((m: TwoWayMessage) =>
-      (m.contactDetails, m.subject, new String(Base64.encodeBase64String(m.content.getBytes("UTF-8"))), m.replyTo))
+    (m.contactDetails,
+      m.subject,
+      new String(Base64.encodeBase64String(m.content.getBytes("UTF-8"))),
+      m.replyTo))
 }
 
 
