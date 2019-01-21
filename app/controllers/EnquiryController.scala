@@ -16,22 +16,21 @@
 
 package controllers
 
-import javax.inject.{Inject, Singleton}
-import play.api.data.Form
-import play.api.i18n.{I18nSupport, MessagesApi}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import config.AppConfig
 import connectors.TwoWayMessageConnector
 import forms.EnquiryFormProvider
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment, InsufficientEnrolments}
+import javax.inject.{Inject, Singleton}
+import models.{EnquiryDetails, Identifier, MessageError}
+import play.api.data.Form
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment, InsufficientEnrolments}
+import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import utils.InputOption
 import views.html.enquiry
 
 import scala.concurrent.Future
-import utils.InputOption
-import models.{EnquiryDetails, MessageError, Identifier}
-import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.http.HttpResponse
 
 @Singleton
 class EnquiryController @Inject()(appConfig: AppConfig,
@@ -63,16 +62,16 @@ class EnquiryController @Inject()(appConfig: AppConfig,
       authorised(Enrolment("HMRC-NI")) {
         form.bindFromRequest().fold(
           (formWithErrors: Form[_]) =>
-            Future.successful(BadRequest("Form error")),
-              enquiryDetails => {
-                twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
-                  case CREATED => extractId(response) match {
-                    case Right(id) => Redirect(routes.EnquirySubmittedController.onPageLoad(Some(id), None))
-                    case Left(error) => Redirect(routes.EnquirySubmittedController.onPageLoad(None, Some(error)))
-                    }
-                  case _ => Redirect(routes.EnquirySubmittedController.onPageLoad(None,Some(MessageError("Error sending enquiry details"))))
-                })
-              }
+            Future.successful(BadRequest(enquiry(appConfig,formWithErrors,options))),
+            enquiryDetails => {
+              twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
+                case CREATED => extractId(response) match {
+                  case Right(id) => Redirect(routes.EnquirySubmittedController.onPageLoad(Some(id), None))
+                  case Left(error) => Redirect(routes.EnquirySubmittedController.onPageLoad(None, Some(error)))
+                  }
+                case _ => Redirect(routes.EnquirySubmittedController.onPageLoad(None,Some(MessageError("Error sending enquiry details"))))
+              })
+            }
         )
       }
   }

@@ -17,12 +17,13 @@
 package config
 
 import javax.inject.{Inject, Singleton}
-import play.api.i18n.MessagesApi
-import play.api.mvc.Results.NotFound
+import play.api.i18n.{Messages, MessagesApi}
+import play.api.mvc.Results._
 import play.api.mvc.{Request, RequestHeader, Result}
 import play.api.{Configuration, Environment, Logger}
+import play.twirl.api.Html
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.http.NotFoundException
+import uk.gov.hmrc.http.{NotFoundException, Upstream5xxResponse}
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.http.FrontendErrorHandler
 import views.html.error_template
@@ -53,6 +54,10 @@ class ErrorHandler @Inject()(val appConfig: AppConfig,
         toGGLogin(rh.uri)
       case _: NotFoundException =>
         NotFound(notFoundTemplate(Request(rh, "")))
+      case _: Upstream5xxResponse =>
+        // currently the two-way-message m/s converts any errors from the message m/s to 502 errors so any errors originating there will end up here
+        InternalServerError(standardErrorTemplate("Error","There was an error: ",
+          "We are unable to process your enquiry at this time. Please try again later.")(Request(rh, "")))
       case _ => super.resolveError(rh, ex)
     }
   }

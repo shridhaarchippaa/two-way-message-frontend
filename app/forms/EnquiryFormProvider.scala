@@ -16,12 +16,11 @@
 
 package forms
 
-import javax.inject.Inject
-
 import forms.mappings.Mappings
-import play.api.data.{Form, Mapping}
-import play.api.data.Forms._
+import javax.inject.Inject
 import models.EnquiryDetails
+import play.api.data.Form
+import play.api.data.Forms._
 import utils.InputOption
 
 class EnquiryFormProvider @Inject() extends FormErrorHelper with Mappings {
@@ -29,9 +28,9 @@ class EnquiryFormProvider @Inject() extends FormErrorHelper with Mappings {
   def apply(queueOptions: Seq[InputOption]): Form[EnquiryDetails] =
     Form(
       mapping(
-        "queue" -> text(),
-        "email" -> text(),
-        "subject" -> text(),
+        "queue" -> nonEmptyText,
+        "email" -> email,
+        "subject" -> nonEmptyText,
         "content" -> text()
       )(EnquiryDetails.apply)(EnquiryDetails.unapply)
     )
