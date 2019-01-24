@@ -39,7 +39,6 @@ object TwoWayMessage {
       (__ \ "replyTo").writeNullable[String]
     ) ((m: TwoWayMessage) =>
       (m.contactDetails, m.subject, new String(Base64.encodeBase64String(m.content.getBytes("UTF-8"))), m.replyTo))
-
 }
 
 case class Identifier(id: String)
@@ -47,7 +46,6 @@ case class Identifier(id: String)
 object Identifier {
 
   implicit val id = Json.reads[Identifier]
-
 }
 
 case class MessageError(text: String)

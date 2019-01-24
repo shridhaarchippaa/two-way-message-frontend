@@ -16,7 +16,8 @@
 
 package controllers
 
-import config.{AppConfig, ErrorHandler}
+import config.AppConfig
+import handlers.ErrorHandler
 import javax.inject.{Inject, Singleton}
 import models.{Identifier, MessageError}
 import play.api.i18n.{I18nSupport, MessagesApi}

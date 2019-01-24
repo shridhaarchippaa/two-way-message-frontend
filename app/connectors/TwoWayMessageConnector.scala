@@ -19,7 +19,7 @@ package connectors
 import javax.inject.{Inject, Singleton}
 import models.{ContactDetails, EnquiryDetails, TwoWayMessage}
 import play.api.http.Status
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
@@ -33,7 +33,6 @@ class TwoWayMessageConnector @Inject()(httpClient: HttpClient,
   extends Status with ServicesConfig {
 
   override protected def mode = environment.mode
-  private val logger = Logger(this.getClass)
   lazy val twoWayMessageBaseUrl: String = baseUrl("two-way-message")
 
   def postMessage(details: EnquiryDetails)(implicit hc: HeaderCarrier): Future[HttpResponse] = {

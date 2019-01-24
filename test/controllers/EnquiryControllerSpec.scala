@@ -19,21 +19,33 @@ package controllers
 import com.google.inject.AbstractModule
 import connectors.TwoWayMessageConnector
 import connectors.mocks.MockAuthConnector
+import models.{EnquiryDetails, Identifier, MessageError}
 import net.codingwell.scalaguice.ScalaModule
+import org.jsoup.Jsoup
 import uk.gov.hmrc.auth.core.retrieve.Retrievals
 import play.api.Application
 import play.api.http.Status
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.{AnyContentAsFormUrlEncoded}
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment}
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito._
+import play.api.libs.json.Json
+import play.mvc.Http
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
+  lazy val mockTwoWayMessageConnector = mock[TwoWayMessageConnector]
+
   override def fakeApplication(): Application = {
-    val mockTwoWayMessageConnector = mock[TwoWayMessageConnector]
 
     new GuiceApplicationBuilder()
       .overrides(new AbstractModule with ScalaModule {
@@ -47,12 +59,112 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
   val controller = injector.instanceOf[EnquiryController]
 
-//  "calling onPageLoad()" should {
-//    "return 200 for a successful call with a Nino (HMRC-NI) enrolment from auth-client" in {
-//      val nino = Nino("AB123456C")
-//      mockAuthorise(Enrolment("HMRC-NI"), Retrievals.nino)(Future.successful(Some(nino.value)))
-//      val result = call(controller.onPageLoad(), fakeRequest)
-//      status(result) shouldBe Status.OK
-//    }
-//  }
+  "extractId" should {
+
+    "retrieve an identifier from the Http Response successfully" in {
+      val twmPostMessageResponse = Json.parse(
+        """
+          |    {
+          |     "id":"5c18eb166f0000110204b160"
+          |    }""".stripMargin)
+
+      val identifier = Identifier("5c18eb166f0000110204b160")
+      val result = controller.extractId(HttpResponse(Status.CREATED, Some(twmPostMessageResponse)))
+      result.right.get shouldBe identifier
+    }
+
+    "retrieve an error message if an id isn't provided or malformed json" in {
+      val bad2wmPostMessageResponse = Json.parse("{}")
+      val result = controller.extractId(HttpResponse(Status.CREATED, Some(bad2wmPostMessageResponse)))
+      result.left.get shouldBe MessageError("Missing reference")
+    }
+  }
+
+  // Please see integration tests for auth failure scenarios as these are handled by the ErrorHandler class
+  "calling onPageLoad()" should {
+
+    "return 200 (OK) when presented with a valid Nino (HMRC-NI) enrolment from auth-client" in {
+      val nino = Nino("AB123456C")
+      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
+      val result = call(controller.onPageLoad(), fakeRequest)
+      status(result) shouldBe Status.OK
+      val document = Jsoup.parse(contentAsString(result))
+      document.getElementsByClass("heading-large").text().contains("Ask a secure question") shouldBe true
+    }
+  }
+
+  // Please see integration tests for auth failure scenarios as these are handled by the ErrorHandler class
+  "calling onSubmit()" should {
+
+    val fakeRequestWithForm = FakeRequest(routes.EnquiryController.onSubmit())
+    val requestWithFormData: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
+      "queue" -> "queue1",
+      "email" -> "test@test.com",
+      "subject" -> "test subject",
+      "content" -> "test content"
+    )
+    val enquiryDetails = EnquiryDetails(
+      "queue1",
+      "test@test.com",
+      "test subject",
+      "test content"
+    )
+    val badRequestWithFormData: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
+      "bad" -> "value"
+    )
+
+    "return 303 (SEE_OTHER) when presented with a valid Nino (HMRC-NI) credentials and valid payload" in {
+      val twmPostMessageResponse = Json.parse(
+        """
+          |    {
+          |     "id":"5c18eb166f0000110204b160"
+          |    }""".stripMargin)
+
+      val nino = Nino("AB123456C")
+      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
+      when(mockTwoWayMessageConnector.postMessage(ArgumentMatchers.eq(enquiryDetails))(any[HeaderCarrier])).thenReturn(
+        Future.successful(
+          HttpResponse(Http.Status.CREATED, Some(twmPostMessageResponse))
+        )
+      )
+      val result = await(call(controller.onSubmit(), requestWithFormData))
+      result.header.status shouldBe Status.SEE_OTHER
+      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/submitted?maybeId=5c18eb166f0000110204b160"
+    }
+
+    "return 303 (SEE_OTHER) when presented with a valid Nino (HMRC-NI) credentials but with an invalid payload" in {
+      val bad2wmPostMessageResponse = Json.parse("{}")
+      val nino = Nino("AB123456C")
+      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
+      when(mockTwoWayMessageConnector.postMessage(ArgumentMatchers.eq(enquiryDetails))(any[HeaderCarrier])).thenReturn(
+        Future.successful(
+          HttpResponse(Http.Status.CREATED, Some(bad2wmPostMessageResponse))
+        )
+      )
+      val result = await(call(controller.onSubmit(), requestWithFormData))
+      result.header.status shouldBe Status.SEE_OTHER
+      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/submitted?maybeError=Missing+reference"
+    }
+
+    "return 400 (BAD_REQUEST) when presented with invalid form data" in {
+      val nino = Nino("AB123456C")
+      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
+      val result = call(controller.onSubmit(), badRequestWithFormData)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+
+    "return 303 (SEE_OTHER) when two-way-message service returns a different status than 201 (CREATED)" in {
+      val nino = Nino("AB123456C")
+      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
+      when(mockTwoWayMessageConnector.postMessage(ArgumentMatchers.eq(enquiryDetails))(any[HeaderCarrier])).thenReturn(
+        Future.successful(
+          HttpResponse(Http.Status.CONFLICT)
+        )
+      )
+
+      val result = await(call(controller.onSubmit(), requestWithFormData))
+      result.header.status shouldBe Status.SEE_OTHER
+      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/submitted?maybeError=Error+sending+enquiry+details"
+    }
+  }
 }

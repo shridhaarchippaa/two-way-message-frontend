@@ -20,17 +20,16 @@ import config.AppConfig
 import connectors.TwoWayMessageConnector
 import forms.EnquiryFormProvider
 import javax.inject.{Inject, Singleton}
-import models.{EnquiryDetails, Identifier, MessageError}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment, InsufficientEnrolments}
-import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import utils.InputOption
 import views.html.enquiry
-
 import scala.concurrent.Future
+import utils.InputOption
+import models.{EnquiryDetails, MessageError, Identifier}
+import uk.gov.hmrc.http.HttpResponse
 
 @Singleton
 class EnquiryController @Inject()(appConfig: AppConfig,
@@ -52,8 +51,6 @@ class EnquiryController @Inject()(appConfig: AppConfig,
     implicit request =>
       authorised(Enrolment("HMRC-NI")) {
         Future.successful(Ok(enquiry(appConfig, form, options)))
-      } recoverWith {
-        case InsufficientEnrolments(msg) => Future.successful(Unauthorized(msg))
       }
   }
 
