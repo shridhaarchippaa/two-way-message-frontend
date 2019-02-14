@@ -16,17 +16,18 @@
 
 package controllers
 
+import scala.concurrent.{ExecutionContext, Future}
+import ExecutionContext.Implicits.global
 import config.AppConfig
 import handlers.ErrorHandler
 import javax.inject.{Inject, Singleton}
+
 import models.{Identifier, MessageError}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html.{enquirySubmitted, error_template}
-
-import scala.concurrent.Future
 
 @Singleton
 class EnquirySubmittedController @Inject()(appConfig: AppConfig,

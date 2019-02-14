@@ -20,16 +20,19 @@ import config.AppConfig
 import connectors.TwoWayMessageConnector
 import forms.EnquiryFormProvider
 import javax.inject.{Inject, Singleton}
+
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html.enquiry
-import scala.concurrent.Future
+
+import scala.concurrent.{ExecutionContext, Future}
 import utils.InputOption
-import models.{EnquiryDetails, MessageError, Identifier}
+import models.{EnquiryDetails, Identifier, MessageError}
 import uk.gov.hmrc.http.HttpResponse
+import ExecutionContext.Implicits.global
 
 @Singleton
 class EnquiryController @Inject()(appConfig: AppConfig,
