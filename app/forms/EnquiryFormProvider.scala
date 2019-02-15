@@ -28,6 +28,7 @@ class EnquiryFormProvider @Inject() extends FormErrorHelper with Mappings {
   def apply(queueOptions: Seq[InputOption]): Form[EnquiryDetails] =
     Form(
       mapping(
+        "pageUrl" -> nonEmptyText,
         "queue" -> nonEmptyText,
         "email" -> email,
         "subject" -> nonEmptyText,

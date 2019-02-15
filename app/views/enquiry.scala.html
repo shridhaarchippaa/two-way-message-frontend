@@ -36,6 +36,7 @@
 
     @helpers.form(action = EnquiryController.onSubmit(), 'autoComplete -> "off") {
 
+           <input type="hidden" id="pageUrl" name="pageUrl" value="unknown-page-url"/>
            @components.select(
                field = form("queue"),
                label = messages("enquiry.whatis"),
@@ -60,5 +61,8 @@
 
         @components.submit_button()
     }
+    <script type="text/javascript">
+      document.getElementById('pageUrl').value = window.location.href;
+    </script>
 
 }

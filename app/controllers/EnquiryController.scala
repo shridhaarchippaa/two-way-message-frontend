@@ -33,6 +33,7 @@ import utils.InputOption
 import models.{EnquiryDetails, Identifier, MessageError}
 import uk.gov.hmrc.http.HttpResponse
 import ExecutionContext.Implicits.global
+import play.api.Logger
 
 @Singleton
 class EnquiryController @Inject()(appConfig: AppConfig,
@@ -64,6 +65,7 @@ class EnquiryController @Inject()(appConfig: AppConfig,
           (formWithErrors: Form[_]) =>
             Future.successful(BadRequest(enquiry(appConfig,formWithErrors,options))),
             enquiryDetails => {
+              Logger.debug(s"Enquiry details ${enquiryDetails}")
               twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
                 case CREATED => extractId(response) match {
                   case Right(id) => Redirect(routes.EnquirySubmittedController.onPageLoad(Some(id), None))
