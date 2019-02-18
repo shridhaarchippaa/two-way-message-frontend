@@ -21,7 +21,9 @@ import connectors.TwoWayMessageConnector
 import forms.EnquiryFormProvider
 import javax.inject.{Inject, Singleton}
 
-import play.api.data.Form
+import play.api.data.Forms._
+import play.api.data._
+import play.api.data.validation.Constraints._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import play.api.mvc.{Action, AnyContent}

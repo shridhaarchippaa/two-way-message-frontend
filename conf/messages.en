@@ -43,16 +43,14 @@ site.service_name = Two way secure message frontend
 site.textarea.char_limit = (Limit is {0} characters)
 
 enquiry.title = Ask a secure question
-enquiry.heading = Ask a secure question
-enquiry.whatis = Type of the question
-enquiry.dropdown.p1 = Help with Self Assessment
-enquiry.dropdown.p2 = Help with Child Care
-enquiry.dropdown.p3 = Other Query
 enquiry.feedbackSuccess.heading = Thank you for your enquiry!
 enquiry.feedbackSuccess.title = Thank you!
-enquiry.email = Email:
-enquiry.subject = Subject:
-enquiry.content = Your question:
+
+enquiry.heading = Send your message
+enquiry.subject = What is your question?
+enquiry.email = Email address
+enquiry.confirmEmail = Confirm email address
+enquiry.question = Your question
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account

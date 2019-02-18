@@ -24,13 +24,19 @@ import play.api.data.Forms._
 import utils.InputOption
 
 class EnquiryFormProvider @Inject() extends FormErrorHelper with Mappings {
+  private val SUBJECT_MAX_LENGTH = 60
 
   def apply(queueOptions: Seq[InputOption]): Form[EnquiryDetails] =
     Form(
       mapping(
         "queue" -> nonEmptyText,
-        "email" -> email,
-        "subject" -> nonEmptyText,
+        "email" -> tuple(
+          "email" -> email,
+          "confirm" -> email
+        ).verifying(
+          "Emails don't match", email => email._1 == email._2
+        ),
+        "subject" -> nonEmptyText(maxLength = SUBJECT_MAX_LENGTH),
         "content" -> text()
       )(EnquiryDetails.apply)(EnquiryDetails.unapply)
     )
