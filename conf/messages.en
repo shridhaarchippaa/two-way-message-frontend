@@ -50,6 +50,7 @@ enquiry.heading = Send your message
 enquiry.subject = What is your question?
 enquiry.email = Email address
 enquiry.confirmEmail = Confirm email address
+enquiry.whatis = Type of the question
 enquiry.question = Your question
 
 unauthorised.title = You can’t access this service with this account

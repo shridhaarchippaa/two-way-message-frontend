@@ -44,18 +44,15 @@ class EnquiryController @Inject()(appConfig: AppConfig,
                                   twoWayMessageConnector: TwoWayMessageConnector)
   extends FrontendController with AuthorisedFunctions with I18nSupport {
 
-  def options: Seq[InputOption] = Seq(
-    InputOption("queue1", "enquiry.dropdown.p1", Some("vat_vat-form")),
-    InputOption("queue2", "enquiry.dropdown.p2", None),
-    InputOption("queue99", "enquiry.dropdown.p3", None)
-  )
+  def options: Seq[InputOption] = Seq()
 
-  val form: Form[EnquiryDetails] = formProvider(options)
+  val form: Form[EnquiryDetails] = formProvider()
 
-  def onPageLoad(): Action[AnyContent] = Action.async {
+  def onPageLoad(formType: String): Action[AnyContent] = Action.async {
     implicit request =>
+      val e = InputOption(formType, formType.toUpperCase())
       authorised(Enrolment("HMRC-NI")) {
-        Future.successful(Ok(enquiry(appConfig, form, options)))
+        Future.successful(Ok(enquiry(appConfig, form, Seq(e))))
       }
   }
 
@@ -63,16 +60,29 @@ class EnquiryController @Inject()(appConfig: AppConfig,
     implicit request =>
       authorised(Enrolment("HMRC-NI")) {
         form.bindFromRequest().fold(
-          (formWithErrors: Form[_]) =>
-            Future.successful(BadRequest(enquiry(appConfig,formWithErrors,options))),
+          (formWithErrors: Form[_]) => {
+            Future.successful(BadRequest(enquiry(appConfig,formWithErrors,options)))
+          },
             enquiryDetails => {
-              twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
-                case CREATED => extractId(response) match {
-                  case Right(id) => Redirect(routes.EnquirySubmittedController.onPageLoad(Some(id), None))
-                  case Left(error) => Redirect(routes.EnquirySubmittedController.onPageLoad(None, Some(error)))
+              if(enquiryDetails.email != enquiryDetails.confirmEmail) {
+                Future.successful(
+                  BadRequest(
+                    enquiry(
+                      appConfig,
+                      form.copy(errors = Seq(FormError("email", "The emails provided did not match"))),
+                      options
+                    )
+                  )
+                )
+              } else {
+                twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
+                  case CREATED => extractId(response) match {
+                    case Right(id) => Redirect(routes.EnquirySubmittedController.onPageLoad(Some(id), None))
+                    case Left(error) => Redirect(routes.EnquirySubmittedController.onPageLoad(None, Some(error)))
                   }
-                case _ => Redirect(routes.EnquirySubmittedController.onPageLoad(None,Some(MessageError("Error sending enquiry details"))))
-              })
+                  case _ => Redirect(routes.EnquirySubmittedController.onPageLoad(None,Some(MessageError("Error sending enquiry details"))))
+                })
+              }
             }
         )
       }
