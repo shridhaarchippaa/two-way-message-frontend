@@ -21,10 +21,9 @@ import javax.inject.Inject
 import models.EnquiryDetails
 import play.api.data.Form
 import play.api.data.Forms._
-import utils.InputOption
 
 class EnquiryFormProvider @Inject() extends FormErrorHelper with Mappings {
-  private val SUBJECT_MAX_LENGTH = 60
+  private val SUBJECT_MAX_LENGTH = 65
 
   def apply(): Form[EnquiryDetails] =
     Form(

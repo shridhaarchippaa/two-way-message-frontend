@@ -22,11 +22,10 @@ import connectors.mocks.MockAuthConnector
 import models.{EnquiryDetails, Identifier, MessageError}
 import net.codingwell.scalaguice.ScalaModule
 import org.jsoup.Jsoup
-import uk.gov.hmrc.auth.core.retrieve.Retrievals
 import play.api.Application
 import play.api.http.Status
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.{AnyContentAsFormUrlEncoded}
+import play.api.mvc.AnyContentAsFormUrlEncoded
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.domain.Nino
@@ -36,6 +35,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.mvc.Http
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.Future
@@ -85,33 +85,37 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
     "return 200 (OK) when presented with a valid Nino (HMRC-NI) enrolment from auth-client" in {
       val nino = Nino("AB123456C")
-      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
+      mockAuthorise(Enrolment("HMRC-NI"), Retrievals.email)(Future.successful(Some(nino.value)))
       val result = call(controller.onPageLoad("P800"), fakeRequest)
       status(result) shouldBe Status.OK
       val document = Jsoup.parse(contentAsString(result))
-      document.getElementsByClass("heading-large").text().contains("Ask a secure question") shouldBe true
+      document.getElementsByClass("heading-large").text().contains("Send your message") shouldBe true
     }
   }
 
   // Please see integration tests for auth failure scenarios as these are handled by the ErrorHandler class
-  "calling onSubmit()" should {
 
+  "calling onSubmit()" should {
     val fakeRequestWithForm = FakeRequest(routes.EnquiryController.onSubmit())
     val requestWithFormData: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
       "queue" -> "queue1",
-      "email" -> "test@test.com",
       "subject" -> "test subject",
-      "content" -> "test content"
+      "content" -> "test content",
+      "email" -> "test@test.com",
+      "confirmEmail" -> "test@test.com"
     )
+
     val enquiryDetails = EnquiryDetails(
       "queue1",
-      "test@test.com",
-      "test@test.com",
       "test subject",
-      "test content"
+      "test content",
+      "test@test.com",
+      "test@test.com"
     )
+
     val badRequestWithFormData: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
-      "bad" -> "value"
+      "bad" -> "value",
+      "queue" -> "This will always be present"
     )
 
     "return 303 (SEE_OTHER) when presented with a valid Nino (HMRC-NI) credentials and valid payload" in {
@@ -166,6 +170,75 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
       val result = await(call(controller.onSubmit(), requestWithFormData))
       result.header.status shouldBe Status.SEE_OTHER
       result.header.headers("Location") shouldBe "/two-way-message-frontend/message/submitted?maybeError=Error+sending+enquiry+details"
+    }
+  }
+
+  "validation should" should {
+    val fakeRequestWithForm = FakeRequest(routes.EnquiryController.onSubmit())
+
+    "Successfull" in {
+      val nino = Nino("AB123456C")
+      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
+
+      val matchingEmails: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
+        "queue" -> "queue1",
+        "subject" -> "test subject",
+        "content" -> "test content",
+        "email" -> "test@test.com",
+        "confirmEmail" -> "test@test.com"
+      )
+      val enquiryDetails = EnquiryDetails(
+        "queue1",
+        "test subject",
+        "test content",
+        "test@test.com",
+        "test@test.com"
+      )
+
+      when(mockTwoWayMessageConnector.postMessage(ArgumentMatchers.eq(enquiryDetails))(any[HeaderCarrier])).thenReturn(
+        Future.successful(
+          HttpResponse(Http.Status.CONFLICT)
+        )
+      )
+
+      val result = await(call(controller.onSubmit(), matchingEmails))
+      result.header.status shouldBe Status.SEE_OTHER
+    }
+
+    "Unuccessfull when emails do not match" in {
+      val nino = Nino("AB123456C")
+      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
+
+      val nonMatchingEmails: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
+        "queue" -> "queue1",
+        "subject" -> "test subject",
+        "content" -> "test content",
+        "email" -> "test@test.com",
+        "confirmEmail" -> "test2@test.com"
+      )
+
+      val result = await(call(controller.onSubmit(), nonMatchingEmails))
+      val document = Jsoup.parse(contentAsString(result))
+      println(document.getElementsByClass("error-summary-list").html())
+      result.header.status shouldBe Status.BAD_REQUEST
+    }
+
+    "subject too long" in {
+      val nino = Nino("AB123456C")
+      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
+
+      val nonMatchingEmails: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
+        "queue" -> "queue1",
+        "subject" -> "a" * 66,
+        "content" -> "test content",
+        "email" -> "test@test.com",
+        "confirmEmail" -> "test@test.com"
+      )
+
+      val result = await(call(controller.onSubmit(), nonMatchingEmails))
+      result.header.status shouldBe Status.BAD_REQUEST
+      val document = Jsoup.parse(contentAsString(result))
+      document.getElementsByClass("error-summary-list").html() shouldBe "<li><a href=\"#subject\">Maximum length is 65</a></li>"
     }
   }
 }

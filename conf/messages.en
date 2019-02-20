@@ -37,7 +37,7 @@ site.hidden-delete = Delete {0}
 site.hidden-edit = Change {0}
 site.no = No
 site.yes = Yes
-site.continue = Submit
+site.continue = Send
 site.startAgain = Continue
 site.service_name = Two way secure message frontend
 site.textarea.char_limit = (Limit is {0} characters)
@@ -47,11 +47,11 @@ enquiry.feedbackSuccess.heading = Thank you for your enquiry!
 enquiry.feedbackSuccess.title = Thank you!
 
 enquiry.heading = Send your message
-enquiry.subject = What is your question?
-enquiry.email = Email address
-enquiry.confirmEmail = Confirm email address
+enquiry.subject = Your subject
+enquiry.email = Your email
+enquiry.confirmEmail = Confirm email
 enquiry.whatis = Type of the question
-enquiry.question = Your question
+enquiry.question = What is your question?
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account

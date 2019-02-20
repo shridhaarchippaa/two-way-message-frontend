@@ -19,9 +19,7 @@
 @import controllers.routes._
 @import utils.FormHelpers
 
-@import utils.InputOption
-
-@(appConfig: AppConfig, form: Form[_], options: Seq[InputOption] )(implicit request: Request[_], messages: Messages)
+@(appConfig: AppConfig, form: Form[_], queue: String, email: Option[String], confirmEmail: Option[String])(implicit request: Request[_], messages: Messages)
 
 @main_template(
     title = messages("enquiry.title"),
@@ -36,26 +34,25 @@
 
     @helpers.form(action = EnquiryController.onSubmit(), 'autoComplete -> "off") {
 
-        @components.select(
-            field = form("queue"),
-            options = options,
-            label = "",
-            formGroupClasses = Set("hidden")
-        )
+        <input type="hidden" id='@{form("queue").id}' name='@{form("queue").name}' value="@{queue}">
 
         @components.input_text(
             field = form("subject"),
-            label = messages("enquiry.subject")
+            label = messages("enquiry.subject"),
+            maxlength = Option(65),
+            overrideStyle = "width: 100%"
         )
 
         @components.input_text(
             field = form("email"),
-            label = messages("enquiry.email")
+            label = messages("enquiry.email"),
+            initialValue = email
         )
 
         @components.input_text(
             field = form("confirmEmail"),
-            label = messages("enquiry.confirmEmail")
+            label = messages("enquiry.confirmEmail"),
+            initialValue = confirmEmail
         )
 
         @components.input_textarea(
@@ -65,4 +62,6 @@
 
         @components.submit_button()
     }
+    <div>Our team will reply within 7 working days</div>
 }
+
