@@ -86,7 +86,7 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
     "return 200 (OK) when presented with a valid Nino (HMRC-NI) enrolment from auth-client" in {
       val nino = Nino("AB123456C")
       mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
-      val result = call(controller.onPageLoad(), fakeRequest)
+      val result = call(controller.onPageLoad("P800"), fakeRequest)
       status(result) shouldBe Status.OK
       val document = Jsoup.parse(contentAsString(result))
       document.getElementsByClass("heading-large").text().contains("Ask a secure question") shouldBe true
@@ -105,6 +105,7 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
     )
     val enquiryDetails = EnquiryDetails(
       "queue1",
+      "test@test.com",
       "test@test.com",
       "test subject",
       "test content"

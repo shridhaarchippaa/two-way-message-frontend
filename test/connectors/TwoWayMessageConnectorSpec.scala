@@ -65,6 +65,7 @@ class TwoWayMessageConnectorSpec extends SpecBase {
     val details = EnquiryDetails(
       "queue",
       "email@test.com",
+      "email@test.com",
       "my subject",
       "my question"
     )
