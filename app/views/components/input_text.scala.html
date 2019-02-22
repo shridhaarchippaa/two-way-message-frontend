@@ -19,8 +19,12 @@
         label: String,
         inputClass: Option[String] = None,
         hint: Option[String] = None,
-        labelClass: Option[String] = None
+        labelClass: Option[String] = None,
+        maxlength: Option[Int] = None,
+        initialValue: Option[String] = None,
+        overrideStyle: String = ""
 )(implicit messages: Messages)
+
 
 <div class="form-group @if(field.hasErrors){form-group-error}">
     <label class="form-label" for="@{field.id}">
@@ -38,8 +42,10 @@
         type="text"
         id="@{field.id}"
         name="@{field.name}"
-        value="@{field.value}"
-            @if(field.hasErrors){aria-describedby="error-message-@{field.id}-input"}
+        @if(initialValue.nonEmpty) {value="@{initialValue.get}"} else {value=""}
+        @if(field.hasErrors){aria-describedby="error-message-@{field.id}-input"}
+        @if(maxlength.nonEmpty){ maxlength="@{maxlength.get}" }
+        style="@{overrideStyle}"
         />
     </div>
 </div>

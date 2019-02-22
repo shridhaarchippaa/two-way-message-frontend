@@ -21,7 +21,9 @@ import connectors.TwoWayMessageConnector
 import forms.EnquiryFormProvider
 import javax.inject.{Inject, Singleton}
 
-import play.api.data.Form
+import play.api.data.Forms._
+import play.api.data._
+import play.api.data.validation.Constraints._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import play.api.mvc.{Action, AnyContent}
@@ -29,9 +31,10 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html.enquiry
 
 import scala.concurrent.{ExecutionContext, Future}
-import utils.InputOption
 import models.{EnquiryDetails, Identifier, MessageError}
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.HttpResponse
+
 import ExecutionContext.Implicits.global
 
 @Singleton
@@ -42,18 +45,14 @@ class EnquiryController @Inject()(appConfig: AppConfig,
                                   twoWayMessageConnector: TwoWayMessageConnector)
   extends FrontendController with AuthorisedFunctions with I18nSupport {
 
-  def options: Seq[InputOption] = Seq(
-    InputOption("queue1", "enquiry.dropdown.p1", Some("vat_vat-form")),
-    InputOption("queue2", "enquiry.dropdown.p2", None),
-    InputOption("queue99", "enquiry.dropdown.p3", None)
-  )
+  val form: Form[EnquiryDetails] = formProvider()
 
-  val form: Form[EnquiryDetails] = formProvider(options)
-
-  def onPageLoad(): Action[AnyContent] = Action.async {
+  def onPageLoad(queue: String): Action[AnyContent] = Action.async {
     implicit request =>
-      authorised(Enrolment("HMRC-NI")) {
-        Future.successful(Ok(enquiry(appConfig, form, options)))
+      authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.email) {
+        case email => {
+          Future.successful(Ok(enquiry(appConfig, form, queue.toUpperCase(), email, email)))
+        }
       }
   }
 
@@ -61,16 +60,34 @@ class EnquiryController @Inject()(appConfig: AppConfig,
     implicit request =>
       authorised(Enrolment("HMRC-NI")) {
         form.bindFromRequest().fold(
-          (formWithErrors: Form[_]) =>
-            Future.successful(BadRequest(enquiry(appConfig,formWithErrors,options))),
+          (formWithErrors: Form[EnquiryDetails]) => {
+            var returnedErrorForm = formWithErrors
+            if(emailConfirmationError(formWithErrors)) {
+              returnedErrorForm = appendEmailConfirmationError(formWithErrors)
+            }
+            Future.successful(BadRequest(enquiry(appConfig, returnedErrorForm, formWithErrors.data.get("queue").get, formWithErrors.data.get("email"), formWithErrors.data.get("confirmEmail"))))
+          },
             enquiryDetails => {
-              twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
-                case CREATED => extractId(response) match {
-                  case Right(id) => Redirect(routes.EnquirySubmittedController.onPageLoad(Some(id), None))
-                  case Left(error) => Redirect(routes.EnquirySubmittedController.onPageLoad(None, Some(error)))
+              if(enquiryDetails.email != enquiryDetails.confirmEmail) {
+                val errorForm = appendEmailConfirmationError(form)
+                Future.successful(
+                  BadRequest(enquiry(appConfig,
+                      errorForm,
+                      enquiryDetails.queue,
+                      Option(enquiryDetails.email),
+                      Option(enquiryDetails.confirmEmail)
+                    )
+                  )
+                )
+              } else {
+                twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
+                  case CREATED => extractId(response) match {
+                    case Right(id) => Redirect(routes.EnquirySubmittedController.onPageLoad(Some(id), None))
+                    case Left(error) => Redirect(routes.EnquirySubmittedController.onPageLoad(None, Some(error)))
                   }
-                case _ => Redirect(routes.EnquirySubmittedController.onPageLoad(None,Some(MessageError("Error sending enquiry details"))))
-              })
+                  case _ => Redirect(routes.EnquirySubmittedController.onPageLoad(None,Some(MessageError("Error sending enquiry details"))))
+                })
+              }
             }
         )
       }
@@ -85,5 +102,16 @@ class EnquiryController @Inject()(appConfig: AppConfig,
       case Some(identifier) => Right(identifier)
       case None => Left(MessageError("Missing reference"))
     }
+  }
+
+  def emailConfirmationError(form: Form[EnquiryDetails]) = {
+    val email = form.data.get("email")
+    val confirmEmail = form.data.get("confirmEmail")
+    (email.isEmpty || confirmEmail.isEmpty) || email.get != confirmEmail.get
+  }
+
+  def appendEmailConfirmationError(form: Form[EnquiryDetails]) = {
+    val appendedErrors = form.errors ++ Seq(FormError("email", "Email addresses must match. Check them and try again."))
+    form.copy(errors = appendedErrors)
   }
 }
