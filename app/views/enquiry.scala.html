@@ -18,8 +18,9 @@
 @import uk.gov.hmrc.play.views.html._
 @import controllers.routes._
 @import utils.FormHelpers
+@import models.EnquiryDetails
 
-@(appConfig: AppConfig, form: Form[_], queue: String, email: Option[String], confirmEmail: Option[String])(implicit request: Request[_], messages: Messages)
+@(appConfig: AppConfig, form: Form[_], defaultEnquiryDetails: EnquiryDetails)(implicit request: Request[_], messages: Messages)
 
 @main_template(
     title = messages("enquiry.title"),
@@ -32,36 +33,39 @@
 
     @components.heading("enquiry.heading")
 
+    <div>Our team will reply within 7 working days</div>
+
     @helpers.form(action = EnquiryController.onSubmit(), 'autoComplete -> "off") {
 
-        <input type="hidden" id='@{form("queue").id}' name='@{form("queue").name}' value="@{queue}">
+        <input type="hidden" id='@{form("queue").id}' name='@{form("queue").name}' value="@{defaultEnquiryDetails.queue}">
 
         @components.input_text(
             field = form("subject"),
             label = messages("enquiry.subject"),
             maxlength = Option(65),
-            overrideStyle = "width: 100%"
+            overrideStyle = "width: 100%",
+            initialValue = defaultEnquiryDetails.subject
         )
 
         @components.input_text(
             field = form("email"),
             label = messages("enquiry.email"),
-            initialValue = email
+            initialValue = defaultEnquiryDetails.email
         )
 
         @components.input_text(
             field = form("confirmEmail"),
             label = messages("enquiry.confirmEmail"),
-            initialValue = confirmEmail
+            initialValue = defaultEnquiryDetails.confirmEmail
         )
 
         @components.input_textarea(
             field = form("content"),
-            label = messages("enquiry.question")
+            label = messages("enquiry.question"),
+            initialValue = defaultEnquiryDetails.content
         )
 
         @components.submit_button()
     }
-    <div>Our team will reply within 7 working days</div>
 }
 

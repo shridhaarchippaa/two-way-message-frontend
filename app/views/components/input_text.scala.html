@@ -21,7 +21,7 @@
         hint: Option[String] = None,
         labelClass: Option[String] = None,
         maxlength: Option[Int] = None,
-        initialValue: Option[String] = None,
+        initialValue: String,
         overrideStyle: String = ""
 )(implicit messages: Messages)
 
@@ -42,7 +42,7 @@
         type="text"
         id="@{field.id}"
         name="@{field.name}"
-        @if(initialValue.nonEmpty) {value="@{initialValue.get}"} else {value=""}
+        value="@initialValue"
         @if(field.hasErrors){aria-describedby="error-message-@{field.id}-input"}
         @if(maxlength.nonEmpty){ maxlength="@{maxlength.get}" }
         style="@{overrideStyle}"

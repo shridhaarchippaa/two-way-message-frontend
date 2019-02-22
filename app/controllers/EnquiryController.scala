@@ -51,7 +51,7 @@ class EnquiryController @Inject()(appConfig: AppConfig,
     implicit request =>
       authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.email) {
         case email => {
-          Future.successful(Ok(enquiry(appConfig, form, queue.toUpperCase(), email, email)))
+          Future.successful(Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", email.getOrElse(""), email.getOrElse("")))))
         }
       }
   }
@@ -65,18 +65,13 @@ class EnquiryController @Inject()(appConfig: AppConfig,
             if(emailConfirmationError(formWithErrors)) {
               returnedErrorForm = appendEmailConfirmationError(formWithErrors)
             }
-            Future.successful(BadRequest(enquiry(appConfig, returnedErrorForm, formWithErrors.data.get("queue").get, formWithErrors.data.get("email"), formWithErrors.data.get("confirmEmail"))))
+            Future.successful(BadRequest(enquiry(appConfig, returnedErrorForm, rebuildFailedForm(formWithErrors))))
           },
             enquiryDetails => {
               if(enquiryDetails.email != enquiryDetails.confirmEmail) {
                 val errorForm = appendEmailConfirmationError(form)
                 Future.successful(
-                  BadRequest(enquiry(appConfig,
-                      errorForm,
-                      enquiryDetails.queue,
-                      Option(enquiryDetails.email),
-                      Option(enquiryDetails.confirmEmail)
-                    )
+                  BadRequest(enquiry(appConfig, errorForm, enquiryDetails)
                   )
                 )
               } else {
@@ -114,4 +109,13 @@ class EnquiryController @Inject()(appConfig: AppConfig,
     val appendedErrors = form.errors ++ Seq(FormError("email", "Email addresses must match. Check them and try again."))
     form.copy(errors = appendedErrors)
   }
+
+  private def rebuildFailedForm(formWithErrors: Form[EnquiryDetails]) = {
+      EnquiryDetails(
+        formWithErrors.data.get("queue").getOrElse(""),
+        formWithErrors.data.get("subject").getOrElse(""),
+        formWithErrors.data.get("content").getOrElse(""),
+        formWithErrors.data.get("email").getOrElse(""),
+        formWithErrors.data.get("confirmEmail").getOrElse(""))
+    }
 }

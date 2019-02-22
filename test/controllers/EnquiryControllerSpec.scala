@@ -205,7 +205,7 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
       result.header.status shouldBe Status.SEE_OTHER
     }
 
-    "Unuccessfull when emails do not match" in {
+    "Unsuccessful when emails do not match" in {
       val nino = Nino("AB123456C")
       mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
 
@@ -219,11 +219,11 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
       val result = await(call(controller.onSubmit(), nonMatchingEmails))
       val document = Jsoup.parse(contentAsString(result))
-      println(document.getElementsByClass("error-summary-list").html())
+      document.getElementsByClass("error-summary-list").html() shouldBe "<li><a href=\"#email\">Email addresses must match. Check them and try again.</a></li>"
       result.header.status shouldBe Status.BAD_REQUEST
     }
 
-    "subject too long" in {
+    "Unsuccessful when subject is too long" in {
       val nino = Nino("AB123456C")
       mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
 

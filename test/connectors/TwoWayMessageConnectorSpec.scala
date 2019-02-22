@@ -73,7 +73,7 @@ class TwoWayMessageConnectorSpec extends SpecBase {
     val message = TwoWayMessage(
       ContactDetails(details.email),
       details.subject,
-      details.text
+      details.content
     )
 
     "respond with a mongo id after a successful call to two-way-message service results in a message creation from a valid payload" in {

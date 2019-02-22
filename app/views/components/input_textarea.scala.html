@@ -20,6 +20,7 @@
         secondaryLabel: Option[String] = None,
         inputClass: Option[String] = None,
         labelClass: Option[String] = None,
+        initialValue: String,
         hint: Option[String] = None
 )(implicit messages: Messages)
 
@@ -44,11 +45,10 @@
         class="form-control form-control--full-width @inputClass"
         id="@{field.id}"
         name="@{field.id}"
-        value="@{field.value}"
         aria-describedby="error-message-@{field.id}-input"
         rows="5"
         onfocusout="snipConsecutiveNewlines(this)"
-        ></textarea>
+        >@initialValue</textarea>
     </div>
 </div>
 
