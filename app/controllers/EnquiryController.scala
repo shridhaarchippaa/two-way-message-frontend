@@ -17,13 +17,11 @@
 package controllers
 
 import config.AppConfig
-import connectors.TwoWayMessageConnector
+import connectors.{PreferencesConnector, TwoWayMessageConnector}
 import forms.EnquiryFormProvider
 import javax.inject.{Inject, Singleton}
 
-import play.api.data.Forms._
 import play.api.data._
-import play.api.data.validation.Constraints._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import play.api.mvc.{Action, AnyContent}
@@ -33,6 +31,7 @@ import views.html.enquiry
 import scala.concurrent.{ExecutionContext, Future}
 import models.{EnquiryDetails, Identifier, MessageError}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.HttpResponse
 
 import ExecutionContext.Implicits.global
@@ -42,19 +41,24 @@ class EnquiryController @Inject()(appConfig: AppConfig,
                                   override val messagesApi: MessagesApi,
                                   formProvider: EnquiryFormProvider,
                                   val authConnector: AuthConnector,
-                                  twoWayMessageConnector: TwoWayMessageConnector)
+                                  twoWayMessageConnector: TwoWayMessageConnector,
+                                  preferencesConnector: PreferencesConnector)
   extends FrontendController with AuthorisedFunctions with I18nSupport {
 
   val form: Form[EnquiryDetails] = formProvider()
 
   def onPageLoad(queue: String): Action[AnyContent] = Action.async {
     implicit request =>
-      authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.email) {
-        case email => {
-          Future.successful(Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", email.getOrElse(""), email.getOrElse("")))))
-        }
+      authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.nino and Retrievals.email) {
+        case nino ~ defaultEmail =>
+          preferencesConnector.getPreferredEmail(nino.get, defaultEmail.get)
+            .map(preferredEmail => {
+              Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", preferredEmail, preferredEmail)))
+            }
+            )
+        case _ => Future.successful(Forbidden)
       }
-  }
+    }
 
   def onSubmit(): Action[AnyContent] = Action.async {
     implicit request =>
@@ -70,10 +74,7 @@ class EnquiryController @Inject()(appConfig: AppConfig,
             enquiryDetails => {
               if(enquiryDetails.email != enquiryDetails.confirmEmail) {
                 val errorForm = appendEmailConfirmationError(form)
-                Future.successful(
-                  BadRequest(enquiry(appConfig, errorForm, enquiryDetails)
-                  )
-                )
+                Future.successful(BadRequest(enquiry(appConfig, errorForm, enquiryDetails)))
               } else {
                 twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
                   case CREATED => extractId(response) match {

@@ -17,7 +17,7 @@
 package controllers
 
 import com.google.inject.AbstractModule
-import connectors.TwoWayMessageConnector
+import connectors.{PreferencesConnector, TwoWayMessageConnector}
 import connectors.mocks.MockAuthConnector
 import models.{EnquiryDetails, Identifier, MessageError}
 import net.codingwell.scalaguice.ScalaModule
@@ -37,6 +37,7 @@ import play.api.libs.json.Json
 import play.mvc.Http
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.auth.core.retrieve.~
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -44,6 +45,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
   lazy val mockTwoWayMessageConnector = mock[TwoWayMessageConnector]
+  lazy val mockPreferencesConnector = mock[PreferencesConnector]
 
   override def fakeApplication(): Application = {
 
@@ -51,6 +53,7 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
       .overrides(new AbstractModule with ScalaModule {
         override def configure(): Unit = {
           bind[TwoWayMessageConnector].toInstance(mockTwoWayMessageConnector)
+          bind[PreferencesConnector].toInstance(mockPreferencesConnector)
           bind[AuthConnector].toInstance(mockAuthConnector)
         }
       })
@@ -85,8 +88,10 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
     "return 200 (OK) when presented with a valid Nino (HMRC-NI) enrolment from auth-client" in {
       val nino = Nino("AB123456C")
-      mockAuthorise(Enrolment("HMRC-NI"), Retrievals.email)(Future.successful(Some(nino.value)))
+      when(mockPreferencesConnector.getPreferredEmail(any[String], any[String])(any[HeaderCarrier])).thenReturn(Future.successful("preferredEmail@test.com"))
+      mockAuthorise(Enrolment("HMRC-NI"), Retrievals.nino and Retrievals.email)(Future.successful(new ~(Some(nino.value), Some("defaultEmail"))))
       val result = call(controller.onPageLoad("P800"), fakeRequest)
+
       status(result) shouldBe Status.OK
       val document = Jsoup.parse(contentAsString(result))
       document.getElementsByClass("heading-large").text().contains("Send your message") shouldBe true
@@ -94,7 +99,6 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
   }
 
   // Please see integration tests for auth failure scenarios as these are handled by the ErrorHandler class
-
   "calling onSubmit()" should {
     val fakeRequestWithForm = FakeRequest(routes.EnquiryController.onSubmit())
     val requestWithFormData: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
