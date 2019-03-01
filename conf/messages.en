@@ -53,5 +53,9 @@ enquiry.confirmEmail = Confirm email
 enquiry.whatis = Type of the question
 enquiry.question = What is your question?
 
+reply.title = Reply to a message
+reply.heading = Reply
+reply.question = What is your question?
+
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
