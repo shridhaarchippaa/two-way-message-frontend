@@ -90,7 +90,7 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
     "return 200 (OK) when presented with a valid Nino (HMRC-NI) enrolment from auth-client" in {
       val nino = Nino("AB123456C")
       when(mockPreferencesConnector.getPreferredEmail(any[String], any[String])(any[HeaderCarrier])).thenReturn(Future.successful("preferredEmail@test.com"))
-      mockAuthorise(EmptyPredicate, Retrievals.nino and Retrievals.email)(Future.successful(new ~(Some(nino.value), Some("defaultEmail"))))
+      mockAuthorise(Enrolment("HMRC-NI"), Retrievals.nino and Retrievals.email)(Future.successful(new ~(Some(nino.value), Some("defaultEmail"))))
       val result = call(controller.onPageLoad("P800"), fakeRequest)
 
       status(result) shouldBe Status.OK
