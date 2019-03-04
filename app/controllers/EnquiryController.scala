@@ -49,7 +49,7 @@ class EnquiryController @Inject()(appConfig: AppConfig,
 
   def onPageLoad(queue: String): Action[AnyContent] = Action.async {
     implicit request =>
-      authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.nino and Retrievals.email) {
+      authorised().retrieve(Retrievals.nino and Retrievals.email) {
         case nino ~ defaultEmail =>
           preferencesConnector.getPreferredEmail(nino.get, defaultEmail.get)
             .map(preferredEmail => {
