@@ -31,7 +31,6 @@ import views.html.enquiry
 import scala.concurrent.{ExecutionContext, Future}
 import models.{EnquiryDetails, Identifier, MessageError}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.HttpResponse
 
 import ExecutionContext.Implicits.global
@@ -49,13 +48,12 @@ class EnquiryController @Inject()(appConfig: AppConfig,
 
   def onPageLoad(queue: String): Action[AnyContent] = Action.async {
     implicit request =>
-      authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.nino and Retrievals.email) {
-        case nino ~ defaultEmail =>
-          preferencesConnector.getPreferredEmail(nino.get, defaultEmail.get)
-            .map(preferredEmail => {
+      authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.nino) {
+        case Some(nino) =>
+          preferencesConnector.getPreferredEmail(nino).map(preferredEmail => {
               Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", preferredEmail, preferredEmail)))
             }
-            )
+          )
         case _ => Future.successful(Forbidden)
       }
     }

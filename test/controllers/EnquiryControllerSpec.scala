@@ -38,7 +38,6 @@ import play.mvc.Http
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.auth.core.retrieve.~
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -89,8 +88,8 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
     "return 200 (OK) when presented with a valid Nino (HMRC-NI) enrolment from auth-client" in {
       val nino = Nino("AB123456C")
-      when(mockPreferencesConnector.getPreferredEmail(any[String], any[String])(any[HeaderCarrier])).thenReturn(Future.successful("preferredEmail@test.com"))
-      mockAuthorise(Enrolment("HMRC-NI"), Retrievals.nino and Retrievals.email)(Future.successful(new ~(Some(nino.value), Some("defaultEmail"))))
+      when(mockPreferencesConnector.getPreferredEmail(any[String])(any[HeaderCarrier])).thenReturn(Future.successful("preferredEmail@test.com"))
+      mockAuthorise(Enrolment("HMRC-NI"), Retrievals.nino)(Future.successful(Some(nino.value)))
       val result = call(controller.onPageLoad("P800"), fakeRequest)
 
       status(result) shouldBe Status.OK

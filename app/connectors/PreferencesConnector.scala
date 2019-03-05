@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package connectors;
+package connectors
 
 import javax.inject.{Inject, Singleton}
 
@@ -26,7 +26,6 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
 
-
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -37,17 +36,17 @@ class PreferencesConnector @Inject()(httpClient: HttpClient, val runModeConfigur
 
   lazy val preferencesBaseUrl: String = baseUrl("preferences")
 
-  def getPreferredEmail(nino: String, defaultEmail: String)(implicit headerCarrier: HeaderCarrier): Future[String] = {
+  def getPreferredEmail(nino: String)(implicit headerCarrier: HeaderCarrier): Future[String] = {
     try {
       for {
         entityId <- entityResolverConnector.resolveEntityIdFromNino(Nino(nino))
         email <- httpClient
           .GET[HttpResponse](s"$preferencesBaseUrl/preferences/$entityId")
           .map(e => (Json.parse(e.body) \ "email" \ "email").as[String])
-          .recover({ case _ => defaultEmail})
+          .recover({ case _ => ""})
       } yield email
     } catch {
-      case _: uk.gov.hmrc.http.NotFoundException => Future.successful(defaultEmail)
+      case _: Throwable => Future.successful("")
     }
   }
 }

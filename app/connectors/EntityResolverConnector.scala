@@ -43,5 +43,6 @@ class EntityResolverConnector @Inject()
     def resolveEntityIdFromNino(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[String] = {
       httpClient.GET[HttpResponse](s"$entityResolverBaseUrl/entity-resolver/paye/${nino}")
         .map(resp => Json.parse(resp.body).as[Entity]._id)
+        .recover({ case _ => ""})
     }
 }
