@@ -79,8 +79,8 @@ class ReplyController @Inject()(appConfig: AppConfig,
       }
   }
 
-  def messagesRedirect = Action {
-    Redirect(appConfig.messagesFrontend)
+  def personalAccountRedirect = Action {
+    Redirect(appConfig.personalAccountFrontend)
   }
 
   def extractId(response: HttpResponse): Either[MessageError,Identifier] = {

@@ -15,3 +15,5 @@ POST       /message/customer/:queueId/:replyTo/reply    controllers.ReplyControl
 GET         /message/customer/:queueId/:replyTo/submitted         controllers.ReplySubmittedController.onPageLoad(queueId, replyTo, maybeId: Option[Identifier],maybeError: Option[MessageError])
 
 GET         /message/customer/:queueId/:replyTo/reply   controllers.ReplyController.onPageLoad(queueId, replyTo)
+
+GET         /messages/personal-account                   controllers.ReplyController.personalAccountRedirect()
