@@ -20,22 +20,18 @@ import config.AppConfig
 import connectors.TwoWayMessageConnector
 import forms.ReplyFormProvider
 import javax.inject.{Inject, Singleton}
-
-import play.api.data.Forms._
+import models.{Identifier, MessageError, ReplyDetails}
 import play.api.data._
-import play.api.data.validation.Constraints._
 import play.api.i18n.{I18nSupport, MessagesApi}
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html.reply
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
-import models.{ReplyDetails, Identifier, MessageError}
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.http.HttpResponse
-
-import ExecutionContext.Implicits.global
 
 @Singleton
 class ReplyController @Inject()(appConfig: AppConfig,
