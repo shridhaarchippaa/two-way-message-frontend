@@ -57,10 +57,7 @@ class ReplyController @Inject()(appConfig: AppConfig,
       authorised(Enrolment("HMRC-NI")) {
         form.bindFromRequest().fold(
           (formWithErrors: Form[ReplyDetails]) => {
-            var returnedErrorForm = formWithErrors
-            if(emailConfirmationError(formWithErrors)) {
-              returnedErrorForm = appendEmailConfirmationError(formWithErrors)
-            }
+            val returnedErrorForm = formWithErrors
             Future.successful(BadRequest(reply(queueId, replyTo, appConfig, returnedErrorForm, rebuildFailedForm(formWithErrors))))
           },
             replyDetails => 
@@ -84,17 +81,6 @@ class ReplyController @Inject()(appConfig: AppConfig,
       case Some(identifier) => Right(identifier)
       case None => Left(MessageError("Missing reference"))
     }
-  }
-
-  def emailConfirmationError(form: Form[ReplyDetails]) = {
-    val email = form.data.get("email")
-    val confirmEmail = form.data.get("confirmEmail")
-    (email.isEmpty || confirmEmail.isEmpty) || email.get != confirmEmail.get
-  }
-
-  def appendEmailConfirmationError(form: Form[ReplyDetails]) = {
-    val appendedErrors = form.errors ++ Seq(FormError("email", "Email addresses must match. Check them and try again."))
-    form.copy(errors = appendedErrors)
   }
 
   private def rebuildFailedForm(formWithErrors: Form[ReplyDetails]) = {

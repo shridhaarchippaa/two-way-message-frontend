@@ -110,6 +110,10 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
       "queue" -> "This will always be present"
     )
 
+    val badRequestWithEmptyFormData: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
+      "content" -> ""
+    )
+
     "return 303 (SEE_OTHER) when presented with a valid Nino (HMRC-NI) credentials and valid payload" in {
       val twmPostMessageResponse = Json.parse(
         """
@@ -148,6 +152,16 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
       mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
       val result = call(controller.onSubmit(queueId, messageId), badRequestWithFormData)
       status(result) shouldBe Status.BAD_REQUEST
+    }
+
+    "return 400 (BAD_REQUEST) when presented with empty form data" in {
+      val nino = Nino("AB123456C")
+      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
+      val result = call(controller.onSubmit(queueId, messageId), badRequestWithEmptyFormData)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val document = Jsoup.parse(contentAsString(result))
+      document.getElementsByClass("error-summary-list").html() shouldBe """<li><a href="#content">Please enter a value</a></li>"""
     }
 
     "return 303 (SEE_OTHER) when two-way-message service returns a different status than 201 (CREATED)" in {
