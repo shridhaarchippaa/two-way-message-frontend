@@ -27,7 +27,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import views.html.{enquirySubmitted, error_template}
+import views.html.{enquiry_submitted, error_template}
 
 @Singleton
 class EnquirySubmittedController @Inject()(appConfig: AppConfig,
@@ -40,7 +40,7 @@ class EnquirySubmittedController @Inject()(appConfig: AppConfig,
     implicit request =>
       authorised(Enrolment("HMRC-NI")) {
         maybeId match {
-          case Some(identifier) => Future.successful(Ok(enquirySubmitted(appConfig, identifier.id)))
+          case Some(identifier) => Future.successful(Ok(enquiry_submitted(appConfig, identifier.id)))
           case _ => maybeError match {
             case Some(error) => Future.successful(Ok(error_template("Error", "There was an error:", error.text, appConfig)))
             case _ => Future.successful(Ok(error_template("Error", "Missing reference number!","", appConfig)))

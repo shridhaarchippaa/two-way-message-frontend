@@ -88,7 +88,11 @@ class EnquiryController @Inject()(appConfig: AppConfig,
   }
 
   def messagesRedirect = Action {
-    Redirect(appConfig.messagesFrontend)
+    Redirect(appConfig.messagesFrontendUrl)
+  }
+
+  def personalAccountRedirect = Action {
+    Redirect(appConfig.personalAccountUrl)
   }
 
   def extractId(response: HttpResponse): Either[MessageError,Identifier] = {

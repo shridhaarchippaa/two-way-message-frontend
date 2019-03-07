@@ -38,14 +38,11 @@ site.hidden-edit = Change {0}
 site.no = No
 site.yes = Yes
 site.continue = Send
-site.startAgain = Continue
-site.service_name = Two way secure message frontend
+site.account.home = Back to account home
+site.service_name = Personal Tax Account
 site.textarea.char_limit = (Limit is {0} characters)
 
 enquiry.title = Ask a secure question
-enquiry.feedbackSuccess.heading = Thank you for your enquiry!
-enquiry.feedbackSuccess.title = Thank you!
-
 enquiry.heading = Send your message
 enquiry.subject = Your subject
 enquiry.email = Your email
@@ -53,13 +50,21 @@ enquiry.confirmEmail = Confirm email
 enquiry.whatis = Type of the question
 enquiry.question = What is your question?
 
+enquiry.success.title = Message sent
+enquiry.success.heading = Message Sent
+enquiry.success.sub_heading = HMRC received your message and will reply within 5 working days
+enquiry.success.sub_text = We have sent you an email confirmation and added a copy of your message to your inbox.
+enquiry.success.next.heading = What happens next
+enquiry.success.next.para1 = You do not need to do anything now.
+enquiry.success.next.para2 = When your reply is ready, we will send you an email to let you know.
+enquiry.success.next.para3 = You will then be able to find your reply in your
+enquiry.success.next.link_text = HMRC message inbox
 
 reply.title = Reply to a secure answer
 reply.heading = Send a message about this subject
 reply.question = What do you want to add?
 reply.feedbackSuccess.heading = Thank you for your reply!
 reply.feedbackSuccess.title = Thank you!
-
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account

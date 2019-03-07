@@ -31,12 +31,12 @@ trait AppConfig {
   val reportAProblemNonJSUrl: String
   val betaFeedbackUrl: String
   val betaFeedbackUnauthenticatedUrl: String
-  val messagesFrontend: String
+  val personalAccountUrl: String
+  val messagesFrontendUrl: String
   val authUrl: String
   val loginUrl: String
   val loginContinueUrl: String
   val languageTranslationEnabled: Boolean
-  val personalAccountFrontend: String
   def languageMap: Map[String, Lang]
   def routeToSwitchLanguage: String => Call
 }
@@ -58,8 +58,8 @@ class FrontendAppConfig @Inject() (override val runModeConfiguration: Configurat
   lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
   lazy val betaFeedbackUrl = s"$contactHost/contact/beta-feedback"
   lazy val betaFeedbackUnauthenticatedUrl = s"$contactHost/contact/beta-feedback-unauthenticated"
-  lazy val messagesFrontend = s"$personalTaxHost/personal-account/messages"
-  lazy val personalAccountFrontend = s"$personalTaxHost/personal-account"
+  lazy val personalAccountUrl = s"$personalTaxHost/personal-account"
+  lazy val messagesFrontendUrl = s"$personalAccountUrl/messages"
 
   lazy val authUrl = baseUrl("auth")
   lazy val loginUrl = loadConfig("urls.login")

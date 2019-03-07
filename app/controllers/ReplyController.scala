@@ -72,10 +72,6 @@ class ReplyController @Inject()(appConfig: AppConfig,
       }
   }
 
-  def personalAccountRedirect = Action {
-    Redirect(appConfig.personalAccountFrontend)
-  }
-
   def extractId(response: HttpResponse): Either[MessageError,Identifier] = {
     response.json.validate[Identifier].asOpt match {
       case Some(identifier) => Right(identifier)
