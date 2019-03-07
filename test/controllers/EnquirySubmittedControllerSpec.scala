@@ -61,7 +61,7 @@ class EnquirySubmittedControllerSpec extends ControllerSpecBase with MockAuthCon
       val document = Jsoup.parse(contentAsString(result))
       document.getElementsByClass("content__body")
         .text()
-        .contains("Your enquiry reference number is: 5c18eb166f0000110204b160") shouldBe true
+        .contains("Message Sent HMRC received your message and will reply within 5 working days") shouldBe true
     }
 
     "return 200 (OK) when presented with a missing identifier and a valid error message" in {
