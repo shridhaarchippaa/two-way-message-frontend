@@ -33,7 +33,7 @@
 
     @components.heading("enquiry.heading")
 
-    <div>Our team will reply within 7 working days</div>
+    <p class="indent">Our team will reply within @messages("reply.wait.time")</p>
 
     @helpers.form(action = EnquiryController.onSubmit(), 'autoComplete -> "off") {
 
