@@ -64,6 +64,7 @@ reply.wait.time = 5 working days
 reply.title = Reply to a secure answer
 reply.heading = Send a message about this subject
 reply.question = What do you want to add?
+reply.hint = More detail will help us answer your question quickly.
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
