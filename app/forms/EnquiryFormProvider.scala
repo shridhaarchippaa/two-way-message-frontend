@@ -19,21 +19,50 @@ package forms
 import forms.mappings.Mappings
 import javax.inject.Inject
 import models.EnquiryDetails
-import play.api.data.Form
+import play.api.data.{Form, Forms, Mapping}
 import play.api.data.Forms._
+import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
+import play.api.i18n.{Lang, Messages, MessagesApi}
 
-class EnquiryFormProvider @Inject() extends FormErrorHelper with Mappings {
+class EnquiryFormProvider @Inject()( messagesApi: MessagesApi) extends FormErrorHelper with Mappings {
   private val SUBJECT_MAX_LENGTH = 65
 
+
+  val messages = messagesApi.preferred( Seq(Lang("en")))
   def apply(): Form[EnquiryDetails] =
     Form(
       mapping(
         "queue" -> nonEmptyText,
-        "subject" -> nonEmptyText(maxLength = SUBJECT_MAX_LENGTH),
-        "content" -> text(),
+        "subject" -> nonEmptyTextWithError("Please enter a subject").verifying( subjectConstraint),
+        "content" -> nonEmptyTextWithError("Please enter a question").verifying( contentConstraint),
         "email" -> email,
         "confirmEmail" -> email
       )(EnquiryDetails.apply)(EnquiryDetails.unapply)
     )
 
+
+  def nonEmptyTextWithError(error: String): Mapping[String] = {
+    Forms.text verifying Constraint[String]("constraint.required") { o =>
+      if (o == null) Invalid(ValidationError(error)) else if (o.trim.isEmpty) Invalid(ValidationError(error)) else Valid
+    }
+  }
+
+
+  val subjectConstraint: Constraint[String] = Constraint("constraints.subject")({
+    plainText =>
+      if (plainText.length <= 10) {
+        Valid
+      } else {
+        Invalid(Seq(ValidationError("Subject has a maximum length of 65 characters")))
+      }
+  })
+
+  val contentConstraint: Constraint[String] = Constraint("constraints.content")({
+    plainText =>
+      if (plainText.length <= 10) {
+        Valid
+      } else {
+        Invalid(Seq(ValidationError("Content has a maximum length of 10,000 characters")))
+      }
+  })
 }
