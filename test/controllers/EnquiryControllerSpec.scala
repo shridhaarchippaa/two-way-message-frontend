@@ -223,7 +223,7 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
       val result = await(call(controller.onSubmit(), nonMatchingEmails))
       val document = Jsoup.parse(contentAsString(result))
-      document.getElementsByClass("error-summary-list").html() shouldBe "<li><a href=\"#email\">Email addresses must match. Check them and try again.</a></li>"
+      document.getElementsByClass("error-summary-list").html() shouldBe "<li><a href=\"#confirmEmail\">Email addresses must match. Check them and try again.</a></li>"
       result.header.status shouldBe Status.BAD_REQUEST
     }
 

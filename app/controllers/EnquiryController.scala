@@ -109,7 +109,7 @@ class EnquiryController @Inject()(appConfig: AppConfig,
   }
 
   def appendEmailConfirmationError(form: Form[EnquiryDetails]) = {
-    val appendedErrors = form.errors ++ Seq(FormError("email", "Email addresses must match. Check them and try again."))
+    val appendedErrors = form.errors ++ Seq(FormError("confirmEmail", "Email addresses must match. Check them and try again."))
     form.copy(errors = appendedErrors)
   }
 
