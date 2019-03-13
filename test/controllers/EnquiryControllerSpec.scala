@@ -103,16 +103,16 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
     val fakeRequestWithForm = FakeRequest(routes.EnquiryController.onSubmit())
     val requestWithFormData: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
       "queue" -> "queue1",
-      "subject" -> "test subject",
-      "content" -> "test content",
+      "subject" -> "subject",
+      "content" -> "content",
       "email" -> "test@test.com",
       "confirmEmail" -> "test@test.com"
     )
 
     val enquiryDetails = EnquiryDetails(
       "queue1",
-      "test subject",
-      "test content",
+      "subject",
+      "content",
       "test@test.com",
       "test@test.com"
     )
@@ -186,15 +186,15 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
       val matchingEmails: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
         "queue" -> "queue1",
-        "subject" -> "test subject",
-        "content" -> "test content",
+        "subject" -> "subject",
+        "content" -> "content",
         "email" -> "test@test.com",
         "confirmEmail" -> "test@test.com"
       )
       val enquiryDetails = EnquiryDetails(
         "queue1",
-        "test subject",
-        "test content",
+        "subject",
+        "content",
         "test@test.com",
         "test@test.com"
       )
@@ -215,8 +215,8 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
       val nonMatchingEmails: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
         "queue" -> "queue1",
-        "subject" -> "test subject",
-        "content" -> "test content",
+        "subject" -> "subject",
+        "content" -> "content",
         "email" -> "test@test.com",
         "confirmEmail" -> "test2@test.com"
       )
@@ -234,7 +234,7 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
       val nonMatchingEmails: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
         "queue" -> "queue1",
         "subject" -> "a" * 66,
-        "content" -> "test content",
+        "content" -> "test",
         "email" -> "test@test.com",
         "confirmEmail" -> "test@test.com"
       )
@@ -242,7 +242,7 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
       val result = await(call(controller.onSubmit(), nonMatchingEmails))
       result.header.status shouldBe Status.BAD_REQUEST
       val document = Jsoup.parse(contentAsString(result))
-      document.getElementsByClass("error-summary-list").html() shouldBe "<li><a href=\"#subject\">Maximum length is 65</a></li>"
+      document.getElementsByClass("error-summary-list").html() shouldBe "<li><a href=\"#subject\">Subject has a maximum length of 65 characters</a></li>"
     }
   }
 }
