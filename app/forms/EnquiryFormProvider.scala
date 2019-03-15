@@ -50,7 +50,7 @@ class EnquiryFormProvider @Inject()( messagesApi: MessagesApi) extends FormError
 
   val subjectConstraint: Constraint[String] = Constraint("constraints.subject")({
     plainText =>
-      if (plainText.length <= 10) {
+      if (plainText.length <= 65) {
         Valid
       } else {
         Invalid(Seq(ValidationError("Subject has a maximum length of 65 characters")))
@@ -59,10 +59,10 @@ class EnquiryFormProvider @Inject()( messagesApi: MessagesApi) extends FormError
 
   val contentConstraint: Constraint[String] = Constraint("constraints.content")({
     plainText =>
-      if (plainText.length <= 10) {
+      if (plainText.length <= 75000) {
         Valid
       } else {
-        Invalid(Seq(ValidationError("Content has a maximum length of 10,000 characters")))
+        Invalid(Seq(ValidationError("Content has a maximum length of 75,000 characters")))
       }
   })
 }
