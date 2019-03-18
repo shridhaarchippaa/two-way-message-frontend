@@ -33,11 +33,12 @@ import uk.gov.hmrc.twowaymessagefrontend.util.MockAuthConnector
 import play.api.test.Helpers._
 
 import scala.concurrent.Future
+import scala.util.Random
 
 class FrontendSpec extends ControllerSpecBase  with MockAuthConnector with HtmlUnitFactory with   OneBrowserPerSuite{
 
   override lazy val injector = new GuiceApplicationBuilder()
-    .configure(Configuration("metrics.enabled" -> false))
+    .configure(Configuration("metrics.enabled" -> false, "testserver.port" -> 8990))
     .overrides(new AbstractModule with ScalaModule {
       override def configure(): Unit = {
         bind[AuthConnector].toInstance(mockAuthConnector)
@@ -59,28 +60,42 @@ class FrontendSpec extends ControllerSpecBase  with MockAuthConnector with HtmlU
 
   "Frontend test" should {
     "find the home page ok" in {
-      val nino = Nino(true, Some("AB123456C"))
       mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(Some("AB123456C")))
 
       val result = await(call(enquiryController.onPageLoad("p800"), fakeRequest))
       result.header.status mustBe (200)
     }
 
-    "display no subject if nothing entered" in {
-      val nino = Nino(true, Some("AB123456C"))
-      mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(Some("AB123456C")))
+    "display error message if nothing entered for Subject" in {
+      stubLogin("AB123456C")
 
       go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
 
-      // PRESS SUBMIT
+      click on find(id("submit")).value
 
-      pageSource.toString must include ("Please enter a subject")
+      eventually { pageSource must include ("Please enter a subject") }
+    }
 
+    "display error message if subject is longer than max" in {
+      stubLogin("AB123456C")
+
+      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
+
+      textField("subject").value = Random.nextString(80)
+
+      click on find(id("submit")).value
+
+      eventually { pageSource must include ("Subject has a maximum length of 65 characters") }
     }
 
   }
 
 
+
+  def stubLogin( nino:String): Unit = {
+    mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(Some(nino)))
+    mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some("AB123456C")))
+  }
 
 
 }

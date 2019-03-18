@@ -9,7 +9,7 @@ lazy val appName: String = "two-way-message-frontend"
 
 lazy val scalatest = "org.scalatest" %% "scalatest" % "3.0.5"
 
-//lazy val externalServices = List(
+lazy val externalServices = List(
 //    ExternalService(name = "DATASTREAM"),
 //    ExternalService("IDENTITY_VERIFICATION", enableTestOnlyEndpoints = true),
 //    ExternalService("AUTH"),
@@ -17,8 +17,8 @@ lazy val scalatest = "org.scalatest" %% "scalatest" % "3.0.5"
 //    ExternalService("USER_DETAILS"),
 //    ExternalService("AUTH_LOGIN_API"),
 //    ExternalService("AUTH_LOGIN_STUB"),
-//    ExternalService("IDENTITY_VERIFICATION")
-//)
+    ExternalService("ASSETS_FRONTEND")
+)
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtDistributablesPlugin, SbtArtifactory)
