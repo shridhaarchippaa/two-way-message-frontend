@@ -61,7 +61,6 @@ class EnquiryController @Inject()(appConfig: AppConfig,
 
   def onSubmit(): Action[AnyContent] = Action.async {
     implicit request =>
-      println(s">>>>>onSubmit  CALLED")
       authorised(Enrolment("HMRC-NI")) {
         form.bindFromRequest().fold(
           (formWithErrors: Form[EnquiryDetails]) => {

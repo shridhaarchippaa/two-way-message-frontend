@@ -19,13 +19,11 @@ package uk.gov.hmrc.twowaymessagefrontend
 
 import uk.gov.hmrc.twowaymessagefrontend.util.ControllerSpecBase
 import play.api.libs.json.Reads
-import uk.gov.hmrc.auth.core.retrieve.{EmptyRetrieval, OptionalRetrieval, SimpleRetrieval}
+import uk.gov.hmrc.auth.core.retrieve.OptionalRetrieval
 import com.google.inject.AbstractModule
 import controllers.EnquiryController
 import net.codingwell.scalaguice.ScalaModule
-import org.scalatest.Matchers
 import org.scalatestplus.play.{HtmlUnitFactory, OneBrowserPerSuite}
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.{Application, Configuration}
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.auth.core._
@@ -66,7 +64,18 @@ class FrontendSpec extends ControllerSpecBase  with MockAuthConnector with HtmlU
       result.header.status mustBe (200)
     }
 
-    "display error message if nothing entered for Subject" in {
+    "Forbidden is we dont have a NINO" in {
+      mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(None))
+
+
+      val result = await(call(enquiryController.onPageLoad("p800"), fakeRequest))
+      result.header.status mustBe (403)
+    }
+  }
+
+  "Subject field" should {
+
+    "display error message if nothing entered" in {
       stubLogin("AB123456C")
 
       go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
@@ -87,6 +96,65 @@ class FrontendSpec extends ControllerSpecBase  with MockAuthConnector with HtmlU
 
       eventually { pageSource must include ("Subject has a maximum length of 65 characters") }
     }
+
+
+
+  }
+
+  "email fields" should {
+    "display an error if nothing entered in email and confirmEmail" in {
+      stubLogin("AB123456C")
+
+      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
+
+      textField("email").value = ""
+      textField("confirmEmail").value = ""
+
+      click on find(id("submit")).value
+
+      eventually { pageSource must include ("Email is invalid") }
+    }
+
+
+    "display an error if something entered in email and nothing in confirmEmail" in {
+      stubLogin("AB123456C")
+
+      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
+
+      textField("email").value = "test@test.com"
+      textField("confirmEmail").value = ""
+
+      click on find(id("submit")).value
+
+      eventually { pageSource must include ("Email is invalid") }
+    }
+
+    "display an error if nothing entered in email and something in confirmEmail" in {
+      stubLogin("AB123456C")
+
+      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
+
+      textField("email").value = ""
+      textField("confirmEmail").value = "test@test.com"
+
+      click on find(id("submit")).value
+
+      eventually { pageSource must include ("Email is invalid") }
+    }
+
+    "display an error if email and confirmEmail do not match" in {
+      stubLogin("AB123456C")
+
+      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
+
+      textField("email").value = "email@email.com"
+      textField("confirmEmail").value = "confirmEmail@confirmEmail.com"
+
+      click on find(id("submit")).value
+
+      eventually { pageSource must include ("Email addresses must match. Check them and try again.") }
+    }
+
 
   }
 
