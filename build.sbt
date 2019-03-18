@@ -9,16 +9,16 @@ lazy val appName: String = "two-way-message-frontend"
 
 lazy val scalatest = "org.scalatest" %% "scalatest" % "3.0.5"
 
-lazy val externalServices = List(
-    ExternalService(name = "DATASTREAM"),
-    ExternalService("IDENTITY_VERIFICATION", enableTestOnlyEndpoints = true),
-    ExternalService("AUTH"),
-    ExternalService("GG", enableTestOnlyEndpoints = true),
-    ExternalService("USER_DETAILS"),
-    ExternalService("AUTH_LOGIN_API"),
-    ExternalService("AUTH_LOGIN_STUB"),
-    ExternalService("IDENTITY_VERIFICATION")
-)
+//lazy val externalServices = List(
+//    ExternalService(name = "DATASTREAM"),
+//    ExternalService("IDENTITY_VERIFICATION", enableTestOnlyEndpoints = true),
+//    ExternalService("AUTH"),
+//    ExternalService("GG", enableTestOnlyEndpoints = true),
+//    ExternalService("USER_DETAILS"),
+//    ExternalService("AUTH_LOGIN_API"),
+//    ExternalService("AUTH_LOGIN_STUB"),
+//    ExternalService("IDENTITY_VERIFICATION")
+//)
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtDistributablesPlugin, SbtArtifactory)
@@ -28,8 +28,8 @@ lazy val root = (project in file("."))
   .settings(majorVersion := 0)
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
-  .settings(ServiceManagerPlugin.serviceManagerSettings)
-  .settings(itDependenciesList := externalServices)
+//  .settings(ServiceManagerPlugin.serviceManagerSettings)
+//  .settings(itDependenciesList := externalServices)
   .settings(
     name := appName,
     RoutesKeys.routesImport ++= Seq("models._","controllers.binders.Binders._"),
