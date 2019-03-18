@@ -24,11 +24,6 @@
         hint: Option[String] = None
 )(implicit messages: Messages)
 
-<script>
-    function snipConsecutiveNewlines(element) {
-        element.value = element.value.replace(/\n\s*\n/g, '\n');
-    }
-</script>
 
 <div class="form-group @if(field.hasErrors){form-group-error}">
     <label class="form-label" for="@{field.id}">
@@ -47,7 +42,6 @@
         name="@{field.id}"
         aria-describedby="error-message-@{field.id}-input"
         rows="5"
-        onfocusout="snipConsecutiveNewlines(this)"
         >@initialValue</textarea>
     </div>
 </div>

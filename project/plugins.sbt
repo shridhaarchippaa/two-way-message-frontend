@@ -25,3 +25,5 @@ addSbtPlugin("net.ground5hark.sbt" % "sbt-concat" % "0.1.9")
 addSbtPlugin("com.typesafe.sbt" % "sbt-uglify" % "1.0.4")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.2")
+
+addSbtPlugin("uk.gov.hmrc" % "sbt-service-manager" % "0.4.0")

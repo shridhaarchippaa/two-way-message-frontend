@@ -1,9 +1,24 @@
 import play.sbt.routes.RoutesKeys
 import scoverage.ScoverageKeys
-import uk.gov.hmrc.DefaultBuildSettings
+import uk.gov.hmrc.{DefaultBuildSettings, ExternalService}
+import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
+import uk.gov.hmrc.ServiceManagerPlugin.Keys.itDependenciesList
 
 lazy val appName: String = "two-way-message-frontend"
+
+lazy val scalatest = "org.scalatest" %% "scalatest" % "3.0.5"
+
+lazy val externalServices = List(
+    ExternalService(name = "DATASTREAM"),
+    ExternalService("IDENTITY_VERIFICATION", enableTestOnlyEndpoints = true),
+    ExternalService("AUTH"),
+    ExternalService("GG", enableTestOnlyEndpoints = true),
+    ExternalService("USER_DETAILS"),
+    ExternalService("AUTH_LOGIN_API"),
+    ExternalService("AUTH_LOGIN_STUB"),
+    ExternalService("IDENTITY_VERIFICATION")
+)
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtDistributablesPlugin, SbtArtifactory)
@@ -11,6 +26,10 @@ lazy val root = (project in file("."))
   .settings(DefaultBuildSettings.defaultSettings(): _*)
   .settings(SbtDistributablesPlugin.publishingSettings: _*)
   .settings(majorVersion := 0)
+  .configs(IntegrationTest)
+  .settings(integrationTestSettings(): _*)
+  .settings(ServiceManagerPlugin.serviceManagerSettings)
+  .settings(itDependenciesList := externalServices)
   .settings(
     name := appName,
     RoutesKeys.routesImport ++= Seq("models._","controllers.binders.Binders._"),

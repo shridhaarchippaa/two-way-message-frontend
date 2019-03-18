@@ -22,14 +22,15 @@ object AppDependencies {
 
   val test = Seq(
     "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25",
-    "org.scalatest" %% "scalatest" % "3.0.4",
+    "org.scalatest" %% "scalatest" % "3.0.5",
     "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1",
     "org.pegdown" % "pegdown" % "1.6.0",
     "org.jsoup" % "jsoup" % "1.10.3",
     "com.typesafe.play" %% "play-test" % PlayVersion.current,
     "org.mockito" % "mockito-core" % "2.23.4",
-    "org.scalacheck" %% "scalacheck" % "1.13.4"
-  ).map(_ % Test)
+    "org.scalacheck" %% "scalacheck" % "1.13.4",
+    "org.scalactic" %% "scalactic" % "3.0.5"
+  )
 
   def apply() = compile ++ test
 }
