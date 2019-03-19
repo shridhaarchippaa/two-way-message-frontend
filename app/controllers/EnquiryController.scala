@@ -48,7 +48,6 @@ class EnquiryController @Inject()(appConfig: AppConfig,
 
   def onPageLoad(queue: String): Action[AnyContent] = Action.async {
     implicit request =>
-      val x = request.headers.headers.mkString(", ")
       authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.nino) {
         case Some(nino) =>
           preferencesConnector.getPreferredEmail(nino).map(preferredEmail => {

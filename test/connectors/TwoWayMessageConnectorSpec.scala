@@ -107,6 +107,3 @@ class TwoWayMessageConnectorSpec extends SpecBase {
     }
   }
 }
-
-
-
