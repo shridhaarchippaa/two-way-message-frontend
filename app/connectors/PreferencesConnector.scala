@@ -19,7 +19,7 @@ package connectors
 import javax.inject.{Inject, Singleton}
 import play.api.Mode.Mode
 import play.api.http.Status
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -37,17 +37,18 @@ class PreferencesConnector @Inject()(httpClient: HttpClient, val runModeConfigur
   lazy val preferencesBaseUrl: String = baseUrl("preferences")
 
   def getPreferredEmail(nino: String)(implicit headerCarrier: HeaderCarrier): Future[String] = {
+
+    def verified(body:JsValue): Boolean = (body \ "email" \ "isVerified").asOpt[Boolean].getOrElse(false)
+    def hasBounces(body:JsValue): Boolean = (body \ "email" \ "hasBounces").asOpt[Boolean].getOrElse(false)
+
     try {
       for {
         entityId <- entityResolverConnector.resolveEntityIdFromNino(Nino(nino))
         email <- httpClient
           .GET[HttpResponse](s"$preferencesBaseUrl/preferences/$entityId")
           .map(e => {
-            val jBody = Json.parse(e.body)
-            val verified = (jBody \ "email" \ "isVerified").asOpt[Boolean].getOrElse(false)
-            val hasBounces = (jBody \ "email" \ "hasBounces").asOpt[Boolean].getOrElse(false)
-            if (verified && !hasBounces)
-              (jBody \ "email" \ "email").as[String]
+            val jBody: JsValue = Json.parse(e.body)
+            if (verified(jBody) && !hasBounces(jBody)) (jBody \ "email" \ "email").as[String]
             else ""
           })
           .recover({ case _ => "" })
