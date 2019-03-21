@@ -14,14 +14,21 @@
  * limitations under the License.
  */
 
-package pages
+package models
 
-import scala.language.implicitConversions
+import org.scalatest.FunSuite
 
-trait Page
+import play.api.libs.json.{Json, _}
 
-object Page {
+class TwoWayMessageSpec extends FunSuite {
+  import models.TwoWayMessageReply._
 
-  implicit def toString(page: Page): String =
-    page.toString
+  test("TwoWayMessageReply should create json correctly") {
+
+    val twoWayMessageReply = TwoWayMessageReply("Hello World")
+    val json = Json.toJson(twoWayMessageReply)
+
+    assert( json.toString === """{"content":"SGVsbG8gV29ybGQ="}""")
+  }
+
 }

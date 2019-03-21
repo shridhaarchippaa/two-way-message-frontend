@@ -17,7 +17,7 @@
 package connectors
 
 import javax.inject.{Inject, Singleton}
-
+import play.api.Mode.Mode
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.{Configuration, Environment}
@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class PreferencesConnector @Inject()(httpClient: HttpClient, val runModeConfiguration: Configuration, val environment: Environment, val entityResolverConnector: EntityResolverConnector)(implicit ec: ExecutionContext) extends Status with ServicesConfig {
 
 
-  override protected def mode = environment.mode
+  override protected def mode: Mode = environment.mode
 
   lazy val preferencesBaseUrl: String = baseUrl("preferences")
 
@@ -42,8 +42,15 @@ class PreferencesConnector @Inject()(httpClient: HttpClient, val runModeConfigur
         entityId <- entityResolverConnector.resolveEntityIdFromNino(Nino(nino))
         email <- httpClient
           .GET[HttpResponse](s"$preferencesBaseUrl/preferences/$entityId")
-          .map(e => (Json.parse(e.body) \ "email" \ "email").as[String])
-          .recover({ case _ => ""})
+          .map(e => {
+            val jBody = Json.parse(e.body)
+            val verified = (jBody \ "email" \ "isVerified").asOpt[Boolean].getOrElse(false)
+            val hasBounces = (jBody \ "email" \ "hasBounces").asOpt[Boolean].getOrElse(false)
+            if (verified && !hasBounces)
+              (jBody \ "email" \ "email").as[String]
+            else ""
+          })
+          .recover({ case _ => "" })
       } yield email
     } catch {
       case _: Throwable => Future.successful("")

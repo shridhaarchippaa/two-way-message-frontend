@@ -123,6 +123,45 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
 
 //      verify(twoWayMessageConnector)
     }
+
+    "Send a valid reply message" in {
+      import org.scalatest.mockito.MockitoSugar._
+      import org.mockito.Mockito._
+
+//      lazy implicit val hc = new HeaderCarrier()
+
+
+      mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(Some("AB123456C")))
+      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some("AB123456C")))
+
+      when( preferencesConnector.getPreferredEmail( ArgumentMatchers.eq("AB123456C") )(ArgumentMatchers.any[HeaderCarrier])) thenReturn {
+        Future.successful("email@dummy.com")
+      }
+
+      val enquiryDetails = EnquiryDetails("p800", "A question", "A question from the customer", "test@dummy.com", "test@dummy.com")
+      when(twoWayMessageConnector.postReplyMessage( ArgumentMatchers.any(), ArgumentMatchers.eq("p800"), ArgumentMatchers.eq("5c8a31931d00000b00a30bdc"))(ArgumentMatchers.any[HeaderCarrier])).thenReturn {
+        val x = Json.parse( """{ "id":"5c18eb166f0000110204b160" }""".stripMargin )
+
+        Future.successful(HttpResponse(play.api.http.Status.CREATED, Some(x)))
+      }
+
+      go to s"http://localhost:$port/two-way-message-frontend/message/customer/p800/5c8a31931d00000b00a30bdc/reply"
+
+//      textField("subject").value = "A question"
+//      textField("email").value = "test@dummy.com"
+//      textField("confirmEmail").value = "test@dummy.com"
+      textArea("content").value = "A question from the customer"
+
+
+      click on find(id("submit")).value
+
+      eventually { pageSource must include ("HMRC received your message and will reply within") }
+
+//      verify(twoWayMessageConnector)
+    }
+
+
+
   }
 
   "Subject field" should {
@@ -239,28 +278,29 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
       }
 
 
-// cannot find a way to make this work.
-//    "display error if long message entered" in {
-//      stubLogin("AB123456C")
-//
-//      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
-//
+    "display error if long message entered" in {
+      stubLogin("AB123456C")
+
+      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
+
 //      textArea("content").value =  Random.nextString(75201)
-//
-//      click on find(id("submit")).value
-//
-//      eventually { pageSource must include ("Content has a maximum length of 75,000 characters") }
-//    }
+      setContentToStringOfLength("content", 75201 )
+
+      click on find(id("submit")).value
+
+      eventually { pageSource must include ("Content has a maximum length of 75,000 characters") }
+    }
 
     }
   }
 
 
+  private def setContentToStringOfLength(id:String, length:Int): Unit = {
+    val js = s"""document.getElementById("$id").value = 'x'.repeat($length)"""
+    val j = webDriver.asInstanceOf[JavascriptExecutor]
+    j.executeScript(js)
+  }
 
-//  def textAreaSetText( id:String, txt:String ): Unit = {
-//    val j = webDriver.asInstanceOf[JavascriptExecutor]
-//    j.executeScript(s"document.getElementById('content').value='$txt';")
-//  }
 
 
   def stubLogin( nino:String): Unit = {
@@ -273,5 +313,21 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
 
   }
 
+
+
+  "other endpoints" should {
+    "call messagesRedirect for redirection" in {
+
+      val result = await(call(enquiryController.messagesRedirect, fakeRequest))
+      result.header.status mustBe (303)
+    }
+
+    "call personalAccountRedirect for redirection" in {
+
+      val result = await(call(enquiryController.messagesRedirect, fakeRequest))
+      result.header.status mustBe (303)
+    }
+
+  }
 
 }

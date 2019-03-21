@@ -16,13 +16,12 @@
 
 package forms
 
-import forms.mappings.Mappings
 import javax.inject.Inject
 import models.ReplyDetails
 import play.api.data.Form
 import play.api.data.Forms._
 
-class ReplyFormProvider @Inject() extends FormErrorHelper with Mappings {
+class ReplyFormProvider   {
   private val CONTENT_MAX_LENGTH = 100000
 
   def apply(): Form[ReplyDetails] =

@@ -122,7 +122,7 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
       "queue" -> "This will always be present"
     )
 
-    "return 303 (SEE_OTHER) when presented with a valid Nino (HMRC-NI) credentials and valid payload" in {
+    "return 200 (OK) when presented with a valid Nino (HMRC-NI) credentials and valid payload" in {
       val twmPostMessageResponse = Json.parse(
         """
           |    {
@@ -137,11 +137,11 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
         )
       )
       val result = await(call(controller.onSubmit(), requestWithFormData))
-      result.header.status shouldBe Status.SEE_OTHER
-      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/submitted?maybeId=5c18eb166f0000110204b160"
+      result.header.status shouldBe Status.OK
+//      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/submitted?maybeId=5c18eb166f0000110204b160"
     }
 
-    "return 303 (SEE_OTHER) when presented with a valid Nino (HMRC-NI) credentials but with an invalid payload" in {
+    "return 200 (OK) when presented with a valid Nino (HMRC-NI) credentials but with an invalid payload" in {
       val bad2wmPostMessageResponse = Json.parse("{}")
       val nino = Nino("AB123456C")
       mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
@@ -151,8 +151,8 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
         )
       )
       val result = await(call(controller.onSubmit(), requestWithFormData))
-      result.header.status shouldBe Status.SEE_OTHER
-      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/submitted?maybeError=Missing+reference"
+      result.header.status shouldBe Status.OK
+//      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/submitted?maybeError=Missing+reference"
     }
 
     "return 400 (BAD_REQUEST) when presented with invalid form data" in {
@@ -162,7 +162,7 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
       status(result) shouldBe Status.BAD_REQUEST
     }
 
-    "return 303 (SEE_OTHER) when two-way-message service returns a different status than 201 (CREATED)" in {
+    "return 200 (OK) when two-way-message service returns a different status than 201 (CREATED)" in {
       val nino = Nino("AB123456C")
       mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
       when(mockTwoWayMessageConnector.postMessage(ArgumentMatchers.eq(enquiryDetails))(any[HeaderCarrier])).thenReturn(
@@ -172,8 +172,8 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
       )
 
       val result = await(call(controller.onSubmit(), requestWithFormData))
-      result.header.status shouldBe Status.SEE_OTHER
-      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/submitted?maybeError=Error+sending+enquiry+details"
+      result.header.status shouldBe Status.OK
+//      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/submitted?maybeError=Error+sending+enquiry+details"
     }
   }
 
@@ -206,7 +206,7 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector {
       )
 
       val result = await(call(controller.onSubmit(), matchingEmails))
-      result.header.status shouldBe Status.SEE_OTHER
+      result.header.status shouldBe Status.OK
     }
 
     "Unsuccessful when emails do not match" in {

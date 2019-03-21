@@ -1,9 +1,9 @@
 import play.sbt.routes.RoutesKeys
 import scoverage.ScoverageKeys
-import uk.gov.hmrc.{DefaultBuildSettings, ExternalService}
+import uk.gov.hmrc.DefaultBuildSettings
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
-import uk.gov.hmrc.ServiceManagerPlugin.Keys.itDependenciesList
+//import uk.gov.hmrc.ServiceManagerPlugin.Keys.itDependenciesList
 
 lazy val appName: String = "two-way-message-frontend"
 
@@ -21,13 +21,15 @@ lazy val root = (project in file("."))
   .settings(
     name := appName,
     RoutesKeys.routesImport ++= Seq("models._","controllers.binders.Binders._"),
-    PlayKeys.playDefaultPort := 9000,
+    RoutesKeys.routesImport ++= Seq("models._"),
+    PlayKeys.playDefaultPort := 8990,
     ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;.*filters.*;.*handlers.*;.*components.*;.*repositories.*;" +
       ".*BuildInfo.*;.*javascript.*;.*FrontendAuditConnector.*;.*Routes.*;.*GuiceInjector;" +
-      ".*ControllerConfiguration;.*LanguageSwitchController",
+      ".*ControllerConfiguration;.*LanguageSwitchController;.*.Binders.*;.*.views.*;.*.enquiry",
     ScoverageKeys.coverageMinimum := 80,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true,
+    coverageExcludedPackages := "<empty>;Reverse.*;router\\.*",
     scalacOptions ++= Seq("-Xfatal-warnings", "-feature"),
     libraryDependencies ++= AppDependencies(),
     retrieveManaged := true,

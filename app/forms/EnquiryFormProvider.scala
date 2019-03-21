@@ -16,7 +16,7 @@
 
 package forms
 
-import forms.mappings.Mappings
+//import forms.mappings.Mappings
 import javax.inject.Inject
 import models.EnquiryDetails
 import play.api.data.{Form, Forms, Mapping}
@@ -24,7 +24,7 @@ import play.api.data.Forms._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.{Lang, Messages, MessagesApi}
 
-class EnquiryFormProvider @Inject()( messagesApi: MessagesApi) extends FormErrorHelper with Mappings {
+class EnquiryFormProvider @Inject()( messagesApi: MessagesApi)   {
   private val SUBJECT_MAX_LENGTH = 65
 
 
