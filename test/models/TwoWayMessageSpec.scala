@@ -24,11 +24,9 @@ class TwoWayMessageSpec extends FunSuite {
   import models.TwoWayMessageReply._
 
   test("TwoWayMessageReply should create json correctly") {
-
     val twoWayMessageReply = TwoWayMessageReply("Hello World")
     val json = Json.toJson(twoWayMessageReply)
 
     assert( json.toString === """{"content":"SGVsbG8gV29ybGQ="}""")
   }
-
 }

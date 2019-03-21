@@ -1,7 +1,5 @@
 # microservice specific routes
 
-#GET     /                                               controllers.IndexController.onPageLoad
-
 GET     /assets/*file                                   controllers.Assets.versioned(path="/public", file: Asset)
 
 GET     /language/:lang                                 controllers.LanguageSwitchController.switchToLanguage(lang: String)
@@ -11,10 +9,6 @@ POST    /message/submit                                 controllers.EnquiryContr
 GET     /messages                                       controllers.EnquiryController.messagesRedirect()
 GET     /messages/personal-account                      controllers.EnquiryController.personalAccountRedirect()
 
-#GET     /message/submitted                              controllers.EnquirySubmittedController.onPageLoad(maybeId: Option[Identifier],maybeError: Option[MessageError])
-
 POST    /message/customer/:queueId/:replyTo/reply       controllers.ReplyController.onSubmit(queueId, replyTo)
-#GET     /message/customer/:queueId/:replyTo/submitted_ok   controllers.ReplySubmittedController.replySubmissionSucess(queueId, replyTo, id: Identifier )
-#GET     /message/customer/:queueId/:replyTo/submitted_failed   controllers.ReplySubmittedController.replySubmissionFailed(queueId, replyTo, error: MessageError)
 GET     /message/customer/:queueId/:replyTo/reply       controllers.ReplyController.onPageLoad(queueId, replyTo)
 

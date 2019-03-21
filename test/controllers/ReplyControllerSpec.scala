@@ -90,7 +90,6 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
       val result = call(controller.onPageLoad("P800", "messageid"), fakeRequest)
       status(result) shouldBe Status.OK
       val document = Jsoup.parse(contentAsString(result))
-      // document.getElementsByClass("heading-large").text().contains("Our team will reply") shouldBe true
     }
   }
 
@@ -131,7 +130,6 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
       )
       val result = await(call(controller.onSubmit(queueId, messageId), requestWithFormData))
       result.header.status shouldBe Status.OK
-//      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/customer/p800/543e92e101000001006300c9/submitted?maybeId=5c18eb166f0000110204b160"
     }
 
     "return 200 (OK) when presented with a valid Nino (HMRC-NI) credentials but with an invalid payload" in {
@@ -145,7 +143,6 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
       )
       val result = await(call(controller.onSubmit(queueId, messageId), requestWithFormData))
       result.header.status shouldBe Status.OK
-//      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/customer/p800/543e92e101000001006300c9/submitted?maybeError=Missing+reference"
     }
 
     "return 400 (BAD_REQUEST) when presented with invalid form data" in {
@@ -177,7 +174,6 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
       val result = await(call(controller.onSubmit(queueId, messageId), requestWithFormData))
       result.header.status shouldBe Status.OK
-//      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/customer/p800/543e92e101000001006300c9/submitted?maybeError=Error+sending+reply+details"
     }
   }
 

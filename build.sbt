@@ -3,7 +3,6 @@ import scoverage.ScoverageKeys
 import uk.gov.hmrc.DefaultBuildSettings
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
-//import uk.gov.hmrc.ServiceManagerPlugin.Keys.itDependenciesList
 
 lazy val appName: String = "two-way-message-frontend"
 

@@ -24,11 +24,10 @@ import uk.gov.hmrc.auth.core.retrieve.OptionalRetrieval
 import com.google.inject.AbstractModule
 import connectors.{PreferencesConnector, TwoWayMessageConnector}
 import controllers.ReplyController
-import models.{EnquiryDetails, ReplyDetails}
+import models.ReplyDetails
 import net.codingwell.scalaguice.ScalaModule
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
-import org.openqa.selenium.{JavascriptExecutor, WebElement}
 import org.scalatestplus.play.{HtmlUnitFactory, OneBrowserPerSuite}
 import play.api.{Application, Configuration}
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -83,15 +82,6 @@ class ReplyControllerFrontendSpec extends ControllerSpecBase  with MockAuthConne
       result.header.status mustBe (200)
     }
 
-//    "Forbidden if we dont have a NINO" in {
-//      //      mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(None))
-//      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some("AB123456C")))
-//
-//      val result = await(call(replyController.onPageLoad("p800", "A1B2C3D4E5"), fakeRequest))
-//      result.header.status mustBe (403)
-//    }
-
-
     "Send a valid message" in {
       import org.mockito.Mockito._
 
@@ -115,7 +105,5 @@ class ReplyControllerFrontendSpec extends ControllerSpecBase  with MockAuthConne
 
     }
   }
-
-
 
 }

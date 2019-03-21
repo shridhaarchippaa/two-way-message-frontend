@@ -32,8 +32,6 @@ class LanguageSwitchController @Inject() (
 
   private def langToCall(lang: String): (String) => Call = appConfig.routeToSwitchLanguage
 
-//  private def fallbackURL: String = routes.IndexController.onPageLoad().url
-
   private def languageMap: Map[String, Lang] = appConfig.languageMap
 
   def switchToLanguage(language: String): Action[AnyContent] = Action {

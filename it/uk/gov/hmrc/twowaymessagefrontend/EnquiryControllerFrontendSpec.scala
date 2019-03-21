@@ -37,7 +37,6 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.Future
-import scala.util.Random
 
 class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthConnector with HtmlUnitFactory with   OneBrowserPerSuite{
 
@@ -120,16 +119,10 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
       click on find(id("submit")).value
 
       eventually { pageSource must include ("HMRC received your message and will reply within") }
-
-//      verify(twoWayMessageConnector)
     }
 
     "Send a valid reply message" in {
-      import org.scalatest.mockito.MockitoSugar._
       import org.mockito.Mockito._
-
-//      lazy implicit val hc = new HeaderCarrier()
-
 
       mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(Some("AB123456C")))
       mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some("AB123456C")))
@@ -141,26 +134,17 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
       val enquiryDetails = EnquiryDetails("p800", "A question", "A question from the customer", "test@dummy.com", "test@dummy.com")
       when(twoWayMessageConnector.postReplyMessage( ArgumentMatchers.any(), ArgumentMatchers.eq("p800"), ArgumentMatchers.eq("5c8a31931d00000b00a30bdc"))(ArgumentMatchers.any[HeaderCarrier])).thenReturn {
         val x = Json.parse( """{ "id":"5c18eb166f0000110204b160" }""".stripMargin )
-
         Future.successful(HttpResponse(play.api.http.Status.CREATED, Some(x)))
       }
 
       go to s"http://localhost:$port/two-way-message-frontend/message/customer/p800/5c8a31931d00000b00a30bdc/reply"
 
-//      textField("subject").value = "A question"
-//      textField("email").value = "test@dummy.com"
-//      textField("confirmEmail").value = "test@dummy.com"
       textArea("content").value = "A question from the customer"
-
 
       click on find(id("submit")).value
 
       eventually { pageSource must include ("HMRC received your message and will reply within") }
-
-//      verify(twoWayMessageConnector)
     }
-
-
 
   }
 
@@ -255,7 +239,6 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
         Future.successful("email@dummy.com")
       }
 
-
       go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
 
       eventually { textField("email").value must include ("email@dummy.com") }
@@ -278,18 +261,17 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
       }
 
 
-    "display error if long message entered" in {
-      stubLogin("AB123456C")
-
-      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
-
-//      textArea("content").value =  Random.nextString(75201)
-      setContentToStringOfLength("content", 75201 )
-
-      click on find(id("submit")).value
-
-      eventually { pageSource must include ("Content has a maximum length of 75,000 characters") }
-    }
+//      "display error if long message entered" in {
+//        stubLogin("AB123456C")
+//
+//        go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
+//
+//        setContentToStringOfLength("content", 75201 )
+//
+//        click on find(id("submit")).value
+//
+//        eventually { pageSource must include ("Content has a maximum length of 75,000 characters") }
+//      }
 
     }
   }
@@ -310,24 +292,20 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
     when( preferencesConnector.getPreferredEmail( ArgumentMatchers.eq("AB123456C") )(ArgumentMatchers.any[HeaderCarrier])) thenReturn {
       Future.successful("")
     }
-
   }
 
 
 
   "other endpoints" should {
     "call messagesRedirect for redirection" in {
-
       val result = await(call(enquiryController.messagesRedirect, fakeRequest))
       result.header.status mustBe (303)
     }
 
     "call personalAccountRedirect for redirection" in {
-
       val result = await(call(enquiryController.messagesRedirect, fakeRequest))
       result.header.status mustBe (303)
     }
-
   }
 
 }

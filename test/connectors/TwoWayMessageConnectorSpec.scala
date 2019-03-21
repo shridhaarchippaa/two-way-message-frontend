@@ -134,8 +134,8 @@ class TwoWayMessageConnectorSpec extends SpecBase {
 
       when(mockHttpClient.POST[TwoWayMessageReply, HttpResponse](
         any[String](),
-        any(), //ArgumentMatchers.eq(replyMessage),
-        any())( ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any() )) //any[Seq[(String, String)]])(any[Writes[TwoWayMessageReply]], any[HttpReads[HttpResponse]], any[HeaderCarrier], any[ExecutionContext]))
+        any(),
+        any())( ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any() ))
         .thenReturn(
           Future.successful(HttpResponse(Http.Status.CREATED, Some(twmPostMessageResponse))
           )
@@ -149,8 +149,8 @@ class TwoWayMessageConnectorSpec extends SpecBase {
 
       when(mockHttpClient.POST[TwoWayMessageReply, HttpResponse](
         any[String](),
-        any(), //ArgumentMatchers.eq(replyMessage),
-        any())( ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any() )) //any[Seq[(String, String)]])(any[Writes[TwoWayMessageReply]], any[HttpReads[HttpResponse]], any[HeaderCarrier], any[ExecutionContext]))
+        any(),
+        any())( ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any() ))
         .thenReturn(
           Future.successful(HttpResponse(Http.Status.GATEWAY_TIMEOUT, Some(twmPostMessageResponse))
           )

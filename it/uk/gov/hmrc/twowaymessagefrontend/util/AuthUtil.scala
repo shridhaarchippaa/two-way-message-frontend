@@ -76,10 +76,8 @@ object AuthUtil {
 
 
     val response = Await.result(x, scala.concurrent.duration.Duration.Inf)
-        println(s">>>>>>>>>>>response $response")
 
     val head = response.header("Authorization").get
-        println(s">>>>>>>>>>>head $head")
 
     Some( ("Authorization", head ) )
 
@@ -88,13 +86,5 @@ object AuthUtil {
   def buildNinoUserToken(): Option[(String, String)] = buildUserToken(GG_NINO_USER_PAYLOAD)
 
   def buildSaUserToken(): Option[(String, String)] = buildUserToken(GG_SA_USER_PAYLOAD)
-
-//  def buildStrideToken(): Future[(String, String)] = {
-//    val response = httpClient.url(s"http://localhost:$authPort/auth/sessions")
-//      .withHeaders(("Content-Type", "application/json"))
-//      .post(STRIDE_USER_PAYLOAD)
-//
-//    ("Authorization", response.header("Authorization").get)
-//  }
 
 }
