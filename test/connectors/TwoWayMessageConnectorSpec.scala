@@ -18,7 +18,7 @@ package connectors
 
 import base.SpecBase
 import com.google.inject.AbstractModule
-import models.{ContactDetails, EnquiryDetails, TwoWayMessage}
+import models._
 import net.codingwell.scalaguice.ScalaModule
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
@@ -105,5 +105,60 @@ class TwoWayMessageConnectorSpec extends SpecBase {
       val result = await(twoWayMessageConnector.postMessage(details))
       result.status shouldBe Status.GATEWAY_TIMEOUT
     }
+  }
+
+  "postReplyMessage" should {
+    val twmPostMessageResponse = Json.parse(
+      """
+        |    {
+        |     "id":"5c18eb166f0000110204b160"
+        |    }""".stripMargin)
+
+    val details = EnquiryDetails(
+      "queue",
+      "my subject",
+      "my question",
+      "email@test.com",
+      "email@test.com"
+    )
+
+    val message = TwoWayMessage(
+      ContactDetails(details.email),
+      details.subject,
+      details.content
+    )
+
+    val replyMessage = TwoWayMessageReply("Hello world")
+
+    "respond with a mongo id after a successful call to two-way-message service results in a message creation from a valid payload" in {
+
+      when(mockHttpClient.POST[TwoWayMessageReply, HttpResponse](
+        any[String](),
+        any(),
+        any())( ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any() ))
+        .thenReturn(
+          Future.successful(HttpResponse(Http.Status.CREATED, Some(twmPostMessageResponse))
+          )
+        )
+
+      val result = await(twoWayMessageConnector.postReplyMessage(ReplyDetails("Hello"), "p800", "e6e5ac52-71f1-46d7-b662-39b5c1deb1d8"))
+      result.status shouldBe Status.CREATED
+    }
+
+    "respond with a 504 (GATEWAY TIMEOUT) after an unsuccessful call to two-way-message service results in the error message being propagated back up the chain" in {
+
+      when(mockHttpClient.POST[TwoWayMessageReply, HttpResponse](
+        any[String](),
+        any(),
+        any())( ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any() ))
+        .thenReturn(
+          Future.successful(HttpResponse(Http.Status.GATEWAY_TIMEOUT, Some(twmPostMessageResponse))
+          )
+        )
+
+      val result = await(twoWayMessageConnector.postReplyMessage(ReplyDetails("Hello World"), "p800", "e6e5ac52-71f1-46d7-b662-39b5c1deb1d8"))
+      result.status shouldBe Status.GATEWAY_TIMEOUT
+    }
+
   }
 }

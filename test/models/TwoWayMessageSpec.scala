@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package utils
+package models
 
-import play.api.data.Form
+import org.scalatest.FunSuite
 
-object FormHelpers {
+import play.api.libs.json.{Json, _}
 
-  
-  def getErrorByKey[A](form: Form[_], errorKey: String) = {
-    form.error(errorKey) match {
-      case None => ""
-      case Some(error) => error.message
-    }
+class TwoWayMessageSpec extends FunSuite {
+  import models.TwoWayMessageReply._
+
+  test("TwoWayMessageReply should create json correctly") {
+    val twoWayMessageReply = TwoWayMessageReply("Hello World")
+    val json = Json.toJson(twoWayMessageReply)
+
+    assert( json.toString === """{"content":"SGVsbG8gV29ybGQ="}""")
   }
 }

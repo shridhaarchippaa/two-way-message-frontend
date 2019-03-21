@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2019 HM Revenue & Customs
  *
@@ -14,14 +15,16 @@
  * limitations under the License.
  */
 
-package pages
+package uk.gov.hmrc.twowaymessagefrontend.util
 
-import scala.language.implicitConversions
+import config.{AppConfig, FrontendAppConfig}
+import forms.EnquiryFormProvider
+import play.api.i18n.{Messages, MessagesApi}
 
-trait Page
+trait ControllerSpecBase extends SpecBase {
 
-object Page {
-
-  implicit def toString(page: Page): String =
-    page.toString
+  lazy val appConfig: AppConfig = injector.instanceOf[FrontendAppConfig]
+  lazy val messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
+  lazy val formProvider: EnquiryFormProvider = injector.instanceOf[EnquiryFormProvider]
+  lazy val messages: Messages = messagesApi.preferred(fakeRequest)
 }

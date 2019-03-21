@@ -20,13 +20,12 @@ import config.AppConfig
 import connectors.{PreferencesConnector, TwoWayMessageConnector}
 import forms.EnquiryFormProvider
 import javax.inject.{Inject, Singleton}
-
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import views.html.enquiry
+import views.html.{enquiry, enquiry_submitted, error_template}
 
 import scala.concurrent.{ExecutionContext, Future}
 import models.{EnquiryDetails, Identifier, MessageError}
@@ -63,23 +62,22 @@ class EnquiryController @Inject()(appConfig: AppConfig,
       authorised(Enrolment("HMRC-NI")) {
         form.bindFromRequest().fold(
           (formWithErrors: Form[EnquiryDetails]) => {
-            var returnedErrorForm = formWithErrors
-            if(emailConfirmationError(formWithErrors)) {
-              returnedErrorForm = appendEmailConfirmationError(formWithErrors)
-            }
+            val returnedErrorForm = if(emailConfirmationError(formWithErrors)) {
+                appendEmailConfirmationError(formWithErrors)
+              } else { formWithErrors }
             Future.successful(BadRequest(enquiry(appConfig, returnedErrorForm, rebuildFailedForm(formWithErrors))))
           },
             enquiryDetails => {
               if(enquiryDetails.email != enquiryDetails.confirmEmail) {
-                val errorForm = appendEmailConfirmationError(form)
-                Future.successful(BadRequest(enquiry(appConfig, errorForm, enquiryDetails)))
+                Future.successful(BadRequest(enquiry(appConfig, appendEmailConfirmationError(form), enquiryDetails)))
               } else {
                 twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
                   case CREATED => extractId(response) match {
-                    case Right(id) => Redirect(routes.EnquirySubmittedController.onPageLoad(Some(id), None))
-                    case Left(error) => Redirect(routes.EnquirySubmittedController.onPageLoad(None, Some(error)))
+                    case Right(id) => Ok(enquiry_submitted(appConfig, id.id))
+                    case Left(error) => Ok(error_template("Error", "There was an error:", error.text, appConfig))
                   }
-                  case _ => Redirect(routes.EnquirySubmittedController.onPageLoad(None,Some(MessageError("Error sending enquiry details"))))
+                  case _ =>
+                    Ok(error_template("Error", "There was an error:", "Error sending enquiry details", appConfig))
                 })
               }
             }
@@ -102,23 +100,23 @@ class EnquiryController @Inject()(appConfig: AppConfig,
     }
   }
 
-  def emailConfirmationError(form: Form[EnquiryDetails]) = {
+  private def emailConfirmationError(form: Form[EnquiryDetails]) = {
     val email = form.data.get("email")
     val confirmEmail = form.data.get("confirmEmail")
     (email.isEmpty || confirmEmail.isEmpty) || email.get != confirmEmail.get
   }
 
-  def appendEmailConfirmationError(form: Form[EnquiryDetails]) = {
+  private def appendEmailConfirmationError(form: Form[EnquiryDetails]) = {
     val appendedErrors = form.errors ++ Seq(FormError("confirmEmail", "Email addresses must match. Check them and try again."))
     form.copy(errors = appendedErrors)
   }
 
   private def rebuildFailedForm(formWithErrors: Form[EnquiryDetails]) = {
       EnquiryDetails(
-        formWithErrors.data.get("queue").getOrElse(""),
-        formWithErrors.data.get("subject").getOrElse(""),
-        formWithErrors.data.get("content").getOrElse(""),
-        formWithErrors.data.get("email").getOrElse(""),
-        formWithErrors.data.get("confirmEmail").getOrElse(""))
+        formWithErrors.data.getOrElse("queue", ""),
+        formWithErrors.data.getOrElse("subject", ""),
+        formWithErrors.data.getOrElse("content", ""),
+        formWithErrors.data.getOrElse("email", ""),
+        formWithErrors.data.getOrElse("confirmEmail", ""))
     }
 }

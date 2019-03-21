@@ -24,31 +24,28 @@ import models.{Identifier, MessageError, ReplyDetails}
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import views.html.reply
+import views.html.{enquiry_submitted, error_template, reply}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 @Singleton
 class ReplyController @Inject()(appConfig: AppConfig,
-                                  override val messagesApi: MessagesApi,
-                                  formProvider: ReplyFormProvider,
-                                  val authConnector: AuthConnector,
-                                  twoWayMessageConnector: TwoWayMessageConnector)
+                                override val messagesApi: MessagesApi,
+                                formProvider: ReplyFormProvider,
+                                val authConnector: AuthConnector,
+                                twoWayMessageConnector: TwoWayMessageConnector)
   extends FrontendController with AuthorisedFunctions with I18nSupport {
 
   val form: Form[ReplyDetails] = formProvider()
 
   def onPageLoad(queue: String, replyTo: String): Action[AnyContent] = Action.async {
     implicit request =>
-      authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.email) {
-        case email => {
-          Future.successful(Ok(reply(queue, replyTo, appConfig, form, ReplyDetails( ""))))
-        }
+      authorised(Enrolment("HMRC-NI")) {
+        Future.successful(Ok(reply(queue, replyTo, appConfig, form, ReplyDetails(""))))
       }
   }
 
@@ -60,19 +57,19 @@ class ReplyController @Inject()(appConfig: AppConfig,
             val returnedErrorForm = formWithErrors
             Future.successful(BadRequest(reply(queueId, replyTo, appConfig, returnedErrorForm, rebuildFailedForm(formWithErrors))))
           },
-            replyDetails => 
-              twoWayMessageConnector.postReplyMessage(replyDetails, queueId, replyTo).map(response => response.status match {
-                case CREATED => extractId(response) match {
-                  case Right(id) => Redirect(routes.ReplySubmittedController.onPageLoad(queueId, replyTo, Some(id), None))
-                  case Left(error) => Redirect(routes.ReplySubmittedController.onPageLoad(queueId, replyTo, None, Some(error)))
-                }
-                case _ => Redirect(routes.ReplySubmittedController.onPageLoad(queueId, replyTo, None,Some(MessageError("Error sending reply details"))))
-              })
+          replyDetails =>
+            twoWayMessageConnector.postReplyMessage(replyDetails, queueId, replyTo).map(response => response.status match {
+              case CREATED => extractId(response) match {
+                case Right(id) => Ok(enquiry_submitted(appConfig, id.id))
+                case Left(error) => Ok(error_template("Error", "There was an error:", error.text, appConfig))
+              }
+              case _ => Ok(error_template("Error", "There was an error:", "Error sending reply details", appConfig))
+            })
         )
       }
   }
 
-  def extractId(response: HttpResponse): Either[MessageError,Identifier] = {
+  def extractId(response: HttpResponse): Either[MessageError, Identifier] = {
     response.json.validate[Identifier].asOpt match {
       case Some(identifier) => Right(identifier)
       case None => Left(MessageError("Missing reference"))
@@ -80,8 +77,8 @@ class ReplyController @Inject()(appConfig: AppConfig,
   }
 
   private def rebuildFailedForm(formWithErrors: Form[ReplyDetails]) = {
-      ReplyDetails(
-        formWithErrors.data.get("content").getOrElse("")
-      )
-    }
+    ReplyDetails(
+      formWithErrors.data.getOrElse("content", "")
+    )
+  }
 }
