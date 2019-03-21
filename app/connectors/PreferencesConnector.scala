@@ -29,7 +29,11 @@ import uk.gov.hmrc.play.config.ServicesConfig
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PreferencesConnector @Inject()(httpClient: HttpClient, val runModeConfiguration: Configuration, val environment: Environment, val entityResolverConnector: EntityResolverConnector)(implicit ec: ExecutionContext) extends Status with ServicesConfig {
+class PreferencesConnector @Inject()(httpClient: HttpClient,
+                                     val runModeConfiguration: Configuration,
+                                     val environment: Environment,
+                                     val entityResolverConnector: EntityResolverConnector)
+                                    (implicit ec: ExecutionContext) extends Status with ServicesConfig {
 
 
   override protected def mode: Mode = environment.mode
@@ -48,8 +52,8 @@ class PreferencesConnector @Inject()(httpClient: HttpClient, val runModeConfigur
           .GET[HttpResponse](s"$preferencesBaseUrl/preferences/$entityId")
           .map(e => {
             val jBody: JsValue = Json.parse(e.body)
-            if (verified(jBody) && !hasBounces(jBody)) (jBody \ "email" \ "email").as[String]
-            else ""
+            if  (verified(jBody) && !hasBounces(jBody)) { (jBody \ "email" \ "email").as[String] }
+            else { "" }
           })
           .recover({ case _ => "" })
       } yield email
