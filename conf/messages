@@ -60,7 +60,7 @@ enquiry.success.next.para2 = When your reply is ready, we will send you an email
 enquiry.success.next.para3 = You will then be able to find your reply in your
 enquiry.success.next.link_text = HMRC message inbox
 
-reply.wait.time = 5 working days
+reply.wait.time = 7 working days
 reply.title = Reply to a secure answer
 reply.heading = Send a message about this subject
 reply.question = What do you want to add?
