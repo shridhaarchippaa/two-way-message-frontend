@@ -20,13 +20,15 @@ import config.AppConfig
 import connectors.TwoWayMessageConnector
 import forms.ReplyFormProvider
 import javax.inject.{Inject, Singleton}
-import models.{Identifier, MessageError, ReplyDetails}
+import models.{Identifier, MessageError, MessageV3, ReplyDetails}
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent}
+import play.twirl.api.Html
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import utils.MessageRenderer
 import views.html.{enquiry_submitted, error_template, reply}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,6 +39,7 @@ class ReplyController @Inject()(appConfig: AppConfig,
                                 override val messagesApi: MessagesApi,
                                 formProvider: ReplyFormProvider,
                                 val authConnector: AuthConnector,
+                                messageRenderer: MessageRenderer,
                                 twoWayMessageConnector: TwoWayMessageConnector)
   extends FrontendController with AuthorisedFunctions with I18nSupport {
 
@@ -45,7 +48,13 @@ class ReplyController @Inject()(appConfig: AppConfig,
   def onPageLoad(queue: String, replyTo: String): Action[AnyContent] = Action.async {
     implicit request =>
       authorised(Enrolment("HMRC-NI")) {
-        Future.successful(Ok(reply(queue, replyTo, appConfig, form, ReplyDetails(""))))
+          for {
+             messages <- twoWayMessageConnector.getMessages(replyTo)
+             (before, after) = messages.reverse.headOption
+                 .fold((Html(""), Html(""))){m =>
+                     (messageRenderer.renderMessage(m),
+                                       messageRenderer.renderMessages(messages.reverse.tail))}
+          } yield {Ok(reply(queue, replyTo, appConfig, form, ReplyDetails(""),before, after)) }
       }
   }
 
@@ -55,7 +64,13 @@ class ReplyController @Inject()(appConfig: AppConfig,
         form.bindFromRequest().fold(
           (formWithErrors: Form[ReplyDetails]) => {
             val returnedErrorForm = formWithErrors
-            Future.successful(BadRequest(reply(queueId, replyTo, appConfig, returnedErrorForm, rebuildFailedForm(formWithErrors))))
+              for {
+                  messages <- twoWayMessageConnector.getMessages(replyTo)
+                  (before, after) = messages.reverse.headOption
+                      .fold((Html(""), Html(""))){m =>
+                          (messageRenderer.renderMessage(m),
+                              messageRenderer.renderMessages(messages.reverse.tail))}
+              } yield BadRequest(reply(queueId, replyTo, appConfig, returnedErrorForm, rebuildFailedForm(formWithErrors),before, after))
           },
           replyDetails =>
             twoWayMessageConnector.postReplyMessage(replyDetails, queueId, replyTo).map(response => response.status match {

@@ -19,7 +19,7 @@ package controllers
 import com.google.inject.AbstractModule
 import connectors.TwoWayMessageConnector
 import connectors.mocks.MockAuthConnector
-import models.{ReplyDetails, Identifier, MessageError}
+import models.{Identifier, MessageError, MessageV3, ReplyDetails}
 import net.codingwell.scalaguice.ScalaModule
 import org.jsoup.Jsoup
 import play.api.Application
@@ -35,8 +35,10 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.mvc.Http
+import play.twirl.api.Html
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import utils.MessageRenderer
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -44,7 +46,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
   lazy val mockTwoWayMessageConnector = mock[TwoWayMessageConnector]
+  lazy val mockMessageRenderer = mock[MessageRenderer]
 
+  when(mockMessageRenderer.renderMessage(any())).thenReturn(Html(""))
+  when(mockMessageRenderer.renderMessages(any())).thenReturn(Html(""))
+  when(mockTwoWayMessageConnector.getMessages(any())(any())).thenReturn(List[MessageV3]())
   override def fakeApplication(): Application = {
 
     new GuiceApplicationBuilder()
@@ -52,6 +58,7 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
         override def configure(): Unit = {
           bind[TwoWayMessageConnector].toInstance(mockTwoWayMessageConnector)
           bind[AuthConnector].toInstance(mockAuthConnector)
+          bind[MessageRenderer].toInstance(mockMessageRenderer)
         }
       })
       .build()

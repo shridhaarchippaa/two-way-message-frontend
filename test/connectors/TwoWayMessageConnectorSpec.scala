@@ -16,13 +16,16 @@
 
 package connectors
 
+import assets.Fixtures
 import base.SpecBase
 import com.google.inject.AbstractModule
+import models.MessageFormat._
 import models._
 import net.codingwell.scalaguice.ScalaModule
 import org.mockito.ArgumentMatchers
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, _}
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import play.api.Mode.Mode
 import play.api.http.Status
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -32,10 +35,9 @@ import play.mvc.Http
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class TwoWayMessageConnectorSpec extends SpecBase {
+class TwoWayMessageConnectorSpec extends SpecBase with Fixtures {
 
   lazy implicit val hc = new HeaderCarrier()
   lazy val mockHttpClient = mock[HttpClient]
@@ -84,8 +86,8 @@ class TwoWayMessageConnectorSpec extends SpecBase {
         any[Seq[(String, String)]])(any[Writes[TwoWayMessage]], any[HttpReads[HttpResponse]], any[HeaderCarrier], any[ExecutionContext]))
         .thenReturn(
           Future.successful(HttpResponse(Http.Status.CREATED, Some(twmPostMessageResponse))
+          )
         )
-      )
 
       val result = await(twoWayMessageConnector.postMessage(details))
       result.status shouldBe Status.CREATED
@@ -99,8 +101,8 @@ class TwoWayMessageConnectorSpec extends SpecBase {
         any[Seq[(String, String)]])(any[Writes[TwoWayMessage]],any[HttpReads[HttpResponse]], any[HeaderCarrier], any[ExecutionContext]))
         .thenReturn(
           Future.successful(HttpResponse(Http.Status.GATEWAY_TIMEOUT)
+          )
         )
-      )
 
       val result = await(twoWayMessageConnector.postMessage(details))
       result.status shouldBe Status.GATEWAY_TIMEOUT
@@ -160,5 +162,46 @@ class TwoWayMessageConnectorSpec extends SpecBase {
       result.status shouldBe Status.GATEWAY_TIMEOUT
     }
 
+  }
+
+  "twoWayMessageConnector.getMessages" should {
+
+    "respond with  a list of messages if valid input from 2wsm" in {
+      val messageId = "1234567890"
+      val messagesStr = v3Messages("123", "321")
+      val messages:List[MessageV3] = Json.parse(messagesStr).validate[List[MessageV3]].get
+      when(mockHttpClient.GET(endsWith(s"/message/messages-list/${messageId}"))
+        (rds = any[HttpReads[HttpResponse]], hc = any[HeaderCarrier], ec = any[ExecutionContext]))
+        .thenReturn(Future.successful(HttpResponse(200, Some(Json.parse(messagesStr)), Map.empty, None)))
+
+      val result:List[MessageV3] = await(twoWayMessageConnector.getMessages(messageId))
+      result shouldBe(messages)
+    }
+
+    "return a failed future with a json validation exception if can not parse input messages from 2wsm" in {
+      val messageId = "1234567890"
+      val invalidMessagesStr = "{}"
+      when(mockHttpClient.GET(endsWith(s"/message/messages-list/${messageId}"))
+        (rds = any[HttpReads[HttpResponse]], hc = any[HeaderCarrier], ec = any[ExecutionContext]))
+        .thenReturn(Future.successful(HttpResponse(200, Some(Json.parse(invalidMessagesStr)), Map.empty, None)))
+
+      ScalaFutures.whenReady(twoWayMessageConnector.getMessages(messageId).failed) { ex =>
+        ex shouldBe an[Exception]
+        ex.getMessage should include("""error.expected.jsarray""")
+      }
+    }
+
+    "forward an exception from 2wsm" in {
+      val messageId = "1234567890"
+      val testMessage = "test exception"
+      when(mockHttpClient.GET(endsWith(s"/message/messages-list/${messageId}"))
+        (rds = any[HttpReads[HttpResponse]], hc = any[HeaderCarrier], ec = any[ExecutionContext]))
+        .thenReturn(Future.failed(new Exception(testMessage)))
+
+      ScalaFutures.whenReady(twoWayMessageConnector.getMessages(messageId).failed) { ex =>
+        ex shouldBe a[Exception]
+        ex.getMessage should be(testMessage)
+      }
+    }
   }
 }

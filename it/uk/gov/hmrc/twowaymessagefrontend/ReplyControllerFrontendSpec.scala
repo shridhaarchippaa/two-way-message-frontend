@@ -18,23 +18,23 @@
 package uk.gov.hmrc.twowaymessagefrontend
 
 
-import uk.gov.hmrc.twowaymessagefrontend.util.ControllerSpecBase
-import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.auth.core.retrieve.OptionalRetrieval
 import com.google.inject.AbstractModule
 import connectors.{PreferencesConnector, TwoWayMessageConnector}
 import controllers.ReplyController
 import models.ReplyDetails
 import net.codingwell.scalaguice.ScalaModule
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.play.{HtmlUnitFactory, OneBrowserPerSuite}
-import play.api.{Application, Configuration}
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.twowaymessagefrontend.util.MockAuthConnector
+import play.api.libs.json.{Json, Reads}
 import play.api.test.Helpers._
+import play.api.{Application, Configuration}
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.OptionalRetrieval
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.twowaymessagefrontend.util.{ControllerSpecBase, MockAuthConnector}
 
 import scala.concurrent.Future
 
@@ -43,6 +43,8 @@ class ReplyControllerFrontendSpec extends ControllerSpecBase  with MockAuthConne
 
   val preferencesConnector: PreferencesConnector = mock[PreferencesConnector]
   val twoWayMessageConnector: TwoWayMessageConnector = mock[TwoWayMessageConnector]
+
+  when(twoWayMessageConnector.getMessages(any())(any())).thenReturn(Future.successful(List()))
 
   override lazy val injector = new GuiceApplicationBuilder()
     .configure(Configuration("metrics.enabled" -> false, "testserver.port" -> 8990))
@@ -77,7 +79,6 @@ class ReplyControllerFrontendSpec extends ControllerSpecBase  with MockAuthConne
       when( preferencesConnector.getPreferredEmail( ArgumentMatchers.eq("5c18eb166f0000110204b160") )(ArgumentMatchers.any[HeaderCarrier])) thenReturn {
         Future.successful("email@dummy.com")
       }
-
       val result = await(call(replyController.onPageLoad("p800", "5c18eb166f0000110204b160"), fakeRequest))
       result.header.status mustBe (200)
     }
