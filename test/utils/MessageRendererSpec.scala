@@ -18,7 +18,7 @@ package utils
 
 import assets.Fixtures
 import models.MessageFormat._
-import models.MessageV3
+import models.ConversationItem
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{Ignore, Matchers, WordSpec}
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -34,7 +34,7 @@ class MessageRendererSpec extends WordSpec  with MockitoSugar with  Fixtures wit
     "MessageRenderingService.renderMessage" should {
             "render one message " in {
             val messageId = "12345"
-            val messages = List(Json.parse(v3Message(messageId)).validate[MessageV3].get)
+            val messages = List(Json.parse(v3Message(messageId)).validate[ConversationItem].get)
 
             val result = messageRenderingService.renderMessages(messages)
             result should be("<h1>")

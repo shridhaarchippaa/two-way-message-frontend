@@ -35,9 +35,9 @@ object MessageFormat {
             Writes.enumNameWrites
         )
 
-  implicit val detailsV3Format: Format[DetailsV3] = Json.format[DetailsV3]
+  implicit val detailsV3Format: Format[ConversationItemDetails] = Json.format[ConversationItemDetails]
 
-  implicit val messageV3Format: Format[MessageV3] = Json.format[MessageV3]
+  implicit val messageV3Format: Format[ConversationItem] = Json.format[ConversationItem]
 
 }
 
@@ -61,7 +61,7 @@ object Adviser {
   implicit val adviserFormat: Format[Adviser] = Json.format[Adviser]
 }
 
-case class DetailsV3(
+case class ConversationItemDetails(
   `type`: MessageType,
   form: FormId,
   issueDate: Option[LocalDate],
@@ -70,9 +70,9 @@ case class DetailsV3(
   adviser: Option[Adviser] = None
 )
 
-case class MessageV3 (
-  subject: String,
-  body: Option[DetailsV3],
-  validFrom: LocalDate,
-  content: Option[String]
+case class ConversationItem(
+                               subject: String,
+                               body: Option[ConversationItemDetails],
+                               validFrom: LocalDate,
+                               content: Option[String]
 )

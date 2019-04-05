@@ -20,7 +20,7 @@ import config.AppConfig
 import connectors.TwoWayMessageConnector
 import forms.ReplyFormProvider
 import javax.inject.{Inject, Singleton}
-import models.{Identifier, MessageError, MessageV3, ReplyDetails}
+import models.{Identifier, MessageError, ConversationItem, ReplyDetails}
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent}

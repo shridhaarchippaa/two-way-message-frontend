@@ -169,12 +169,12 @@ class TwoWayMessageConnectorSpec extends SpecBase with Fixtures {
     "respond with  a list of messages if valid input from 2wsm" in {
       val messageId = "1234567890"
       val messagesStr = v3Messages("123", "321")
-      val messages:List[MessageV3] = Json.parse(messagesStr).validate[List[MessageV3]].get
+      val messages:List[ConversationItem] = Json.parse(messagesStr).validate[List[ConversationItem]].get
       when(mockHttpClient.GET(endsWith(s"/message/messages-list/${messageId}"))
         (rds = any[HttpReads[HttpResponse]], hc = any[HeaderCarrier], ec = any[ExecutionContext]))
         .thenReturn(Future.successful(HttpResponse(200, Some(Json.parse(messagesStr)), Map.empty, None)))
 
-      val result:List[MessageV3] = await(twoWayMessageConnector.getMessages(messageId))
+      val result:List[ConversationItem] = await(twoWayMessageConnector.getMessages(messageId))
       result shouldBe(messages)
     }
 

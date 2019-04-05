@@ -19,7 +19,7 @@ package controllers
 import com.google.inject.AbstractModule
 import connectors.TwoWayMessageConnector
 import connectors.mocks.MockAuthConnector
-import models.{Identifier, MessageError, MessageV3, ReplyDetails}
+import models.{Identifier, MessageError, ConversationItem, ReplyDetails}
 import net.codingwell.scalaguice.ScalaModule
 import org.jsoup.Jsoup
 import play.api.Application
@@ -50,7 +50,7 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
   when(mockMessageRenderer.renderMessage(any())).thenReturn(Html(""))
   when(mockMessageRenderer.renderMessages(any())).thenReturn(Html(""))
-  when(mockTwoWayMessageConnector.getMessages(any())(any())).thenReturn(List[MessageV3]())
+  when(mockTwoWayMessageConnector.getMessages(any())(any())).thenReturn(List[ConversationItem]())
   override def fakeApplication(): Application = {
 
     new GuiceApplicationBuilder()

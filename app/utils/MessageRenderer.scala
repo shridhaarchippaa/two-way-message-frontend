@@ -27,14 +27,14 @@ import views.html.rendered_message
 
 class MessageRenderer {
 
-    def renderMessages(messages: List[MessageV3]): Html= rendered_messages(messages)
+    def renderMessages(messages: List[ConversationItem]): Html= rendered_messages(messages)
 
-    def renderMessage(message: MessageV3): Html= rendered_message(message)
+    def renderMessage(message: ConversationItem): Html= rendered_message(message)
 
 }
 
 object DateUtils {
-    def getDateText(message: MessageV3): String = {
+    def getDateText(message: ConversationItem): String = {
         val messageDate = extractMessageDate(message)
         message.body.map{
             details =>
@@ -46,7 +46,7 @@ object DateUtils {
         }.getOrElse(defaultDateText(messageDate))
     }
 
-    def extractMessageDate(message: MessageV3): String =
+    def extractMessageDate(message: ConversationItem): String =
         message.body.get.issueDate match {
             case Some(issueDate) => formatter(issueDate)
             case None => formatter(message.validFrom)

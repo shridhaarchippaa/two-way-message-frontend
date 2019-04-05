@@ -54,10 +54,10 @@ class TwoWayMessageConnector @Inject()(httpClient: HttpClient,
     httpClient.POST(s"$twoWayMessageBaseUrl/two-way-message/message/customer/$queueId/$replyTo/reply", message)
   }
 
-  def getMessages(messageId: String)(implicit hc: HeaderCarrier): Future[List[MessageV3]] =
+  def getMessages(messageId: String)(implicit hc: HeaderCarrier): Future[List[ConversationItem]] =
     httpClient.GET(s"${twoWayMessageBaseUrl}/two-way-message/message/messages-list/$messageId")
       .flatMap {
-        response => response.json.validate[List[MessageV3]].fold(
+        response => response.json.validate[List[ConversationItem]].fold(
           errors => Future.failed(new Exception(Json stringify JsError.toJson(errors))),
           msgList => Future.successful(msgList))
       }
