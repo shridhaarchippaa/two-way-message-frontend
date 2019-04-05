@@ -17,24 +17,24 @@
 package uk.gov.hmrc.twowaymessagefrontend
 
 
-import uk.gov.hmrc.twowaymessagefrontend.util.ControllerSpecBase
-import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.auth.core.retrieve.OptionalRetrieval
 import com.google.inject.AbstractModule
 import connectors.{PreferencesConnector, TwoWayMessageConnector}
 import controllers.EnquiryController
 import models.EnquiryDetails
 import net.codingwell.scalaguice.ScalaModule
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.openqa.selenium.{JavascriptExecutor, WebElement}
+import org.openqa.selenium.JavascriptExecutor
 import org.scalatestplus.play.{HtmlUnitFactory, OneBrowserPerSuite}
-import play.api.{Application, Configuration}
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.twowaymessagefrontend.util.MockAuthConnector
+import play.api.libs.json.{Json, Reads}
 import play.api.test.Helpers._
+import play.api.{Application, Configuration}
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.OptionalRetrieval
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.twowaymessagefrontend.util.{ControllerSpecBase, MockAuthConnector}
 
 import scala.concurrent.Future
 
@@ -43,6 +43,8 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
 
   val preferencesConnector: PreferencesConnector = mock[PreferencesConnector]
   val twoWayMessageConnector: TwoWayMessageConnector = mock[TwoWayMessageConnector]
+
+  when(twoWayMessageConnector.getMessages(any())(any())).thenReturn(Future.successful(List()))
 
   override lazy val injector = new GuiceApplicationBuilder()
     .configure(Configuration("metrics.enabled" -> false, "testserver.port" -> 8990))
@@ -91,7 +93,6 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
 
 
     "Send a valid message" in {
-      import org.scalatest.mockito.MockitoSugar._
       import org.mockito.Mockito._
 
       mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(Some("AB123456C")))

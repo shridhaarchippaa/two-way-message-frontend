@@ -17,10 +17,11 @@
 package connectors
 
 import javax.inject.{Inject, Singleton}
-import models.{ContactDetails, EnquiryDetails, TwoWayMessage, TwoWayMessageReply}
-import models.ReplyDetails
+import models.MessageFormat._
+import models._
 import play.api.Mode.Mode
 import play.api.http.Status
+import play.api.libs.json.{JsError, Json}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -52,4 +53,12 @@ class TwoWayMessageConnector @Inject()(httpClient: HttpClient,
     )
     httpClient.POST(s"$twoWayMessageBaseUrl/two-way-message/message/customer/$queueId/$replyTo/reply", message)
   }
+
+  def getMessages(messageId: String)(implicit hc: HeaderCarrier): Future[List[ConversationItem]] =
+    httpClient.GET(s"${twoWayMessageBaseUrl}/two-way-message/message/messages-list/$messageId")
+      .flatMap {
+        response => response.json.validate[List[ConversationItem]].fold(
+          errors => Future.failed(new Exception(Json stringify JsError.toJson(errors))),
+          msgList => Future.successful(msgList))
+      }
 }
