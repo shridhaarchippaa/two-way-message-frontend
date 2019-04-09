@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.play.views.html._
 @import controllers.routes._
 @import utils.DateUtils
+@import play.twirl.api.Html
 
 @import models.ConversationItem
 
@@ -30,7 +31,7 @@
       <h2 class="govuk-heading-xl margin-top-small margin-bottom-small">@message.subject</h2>
 
        <p class="message_time faded-text--small">@{DateUtils.getDateText(message)}</p>
-       <p>@{message.content.getOrElse("").trim.split('\n').map( s => {s} ++ <br /> )}</p> 
+       @Html(message.content.getOrElse(""))
 }
 
 
