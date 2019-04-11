@@ -29,9 +29,11 @@ bodyClasses = None) {
     </div>
     @components.text("enquiry.success.sub_text")
     <h2 class="heading-medium">@messages("enquiry.success.next.heading")</h2>
+    @components.text("enquiry.success.next.para")
     @components.text("enquiry.success.next.para1")
     @components.text("enquiry.success.next.para2")
-    <p>@messages("enquiry.success.next.para3") <a href="@routes.EnquiryController.messagesRedirect()">@messages("enquiry.success.next.link_text")</a>.</p>
+    <p>@messages("enquiry.success.next.para3") <a href="@routes.EnquiryController.messagesRedirect()">
+       @messages("enquiry.success.next.link_text")</a> @messages("enquiry.success.next.para4")</p>
     <a id="start-again" href="@routes.EnquiryController.personalAccountRedirect()" class="button">@messages("site.account.home")</a>
 
     @if(appConfig.perfTestFlag) {

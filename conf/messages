@@ -55,10 +55,12 @@ enquiry.success.heading = Message Sent
 enquiry.success.sub_heading = HMRC received your message and will reply within
 enquiry.success.sub_text = We have sent you an email confirmation and added a copy of your message to your inbox.
 enquiry.success.next.heading = What happens next
-enquiry.success.next.para1 = You do not need to do anything now.
+enquiry.success.next.para = We are working on your reply.
+enquiry.success.next.para1 = You do not need to follow up by sending another message or by calling us.
 enquiry.success.next.para2 = When your reply is ready, we will send you an email to let you know.
-enquiry.success.next.para3 = You will then be able to find your reply in your
-enquiry.success.next.link_text = HMRC message inbox
+enquiry.success.next.para3 = You can
+enquiry.success.next.para4 = by signing in to HMRC services.
+enquiry.success.next.link_text = view your messages
 
 reply.wait.time = 7 days
 reply.title = Reply to a secure answer
