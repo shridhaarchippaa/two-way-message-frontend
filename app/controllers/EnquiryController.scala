@@ -16,10 +16,13 @@
 
 package controllers
 
+import java.util.concurrent.TimeUnit
+
 import config.AppConfig
 import connectors.{PreferencesConnector, TwoWayMessageConnector}
 import forms.EnquiryFormProvider
 import javax.inject.{Inject, Singleton}
+
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
@@ -49,10 +52,12 @@ class EnquiryController @Inject()(appConfig: AppConfig,
     implicit request =>
       authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.nino) {
         case Some(nino) =>
-          preferencesConnector.getPreferredEmail(nino).map(preferredEmail => {
-              Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", preferredEmail)))
-            }
-          )
+          for {
+            waitTime <- twoWayMessageConnector.getWaitTime(queue)
+            email <- preferencesConnector.getPreferredEmail(nino)
+          } yield {
+            Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", email), waitTime))
+          }
         case _ => Future.successful(Forbidden)
       }
     }
@@ -60,20 +65,22 @@ class EnquiryController @Inject()(appConfig: AppConfig,
   def onSubmit(): Action[AnyContent] = Action.async {
     implicit request =>
       authorised(Enrolment("HMRC-NI")) {
-        form.bindFromRequest().fold(
-          (formWithErrors: Form[EnquiryDetails]) => {
-            Future.successful(BadRequest(enquiry(appConfig, formWithErrors, rebuildFailedForm(formWithErrors))))
-          },
+        val queue = form.bindFromRequest().data("queue")
+        twoWayMessageConnector.getWaitTime(queue).flatMap(waitTime =>
+          form.bindFromRequest().fold(
+            (formWithErrors: Form[EnquiryDetails]) => {
+              Future.successful(BadRequest(enquiry(appConfig, formWithErrors, rebuildFailedForm(formWithErrors), waitTime)))
+            },
             enquiryDetails => {
-                twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
-                  case CREATED => extractId(response) match {
-                    case Right(id) => Ok(enquiry_submitted(appConfig, id.id))
-                    case Left(error) => Ok(error_template("Error", "There was an error:", error.text, appConfig))
-                  }
-                  case _ =>
-                    Ok(error_template("Error", "There was an error:", "Error sending enquiry details", appConfig))
-                })
-              }
+              twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
+                case CREATED => extractId(response) match {
+                  case Right(id) => Ok(enquiry_submitted(appConfig, id.id, waitTime))
+                  case Left(error) => Ok(error_template("Error", "There was an error:", error.text, appConfig))
+                }
+                case _ => Ok(error_template("Error", "There was an error:", "Error sending enquiry details", appConfig))
+              })
+            }
+          )
         )
       }
   }
