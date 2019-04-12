@@ -51,9 +51,8 @@ enquiry.whatis = Type of the question
 enquiry.question = What is your question?
 
 enquiry.success.title = Message sent
-enquiry.success.heading = Message Sent
+enquiry.success.heading = Message sent
 enquiry.success.sub_heading = HMRC received your message and will reply within
-enquiry.success.sub_text = We have sent you an email confirmation and added a copy of your message to your inbox.
 enquiry.success.next.heading = What happens next
 enquiry.success.next.para = We are working on your reply.
 enquiry.success.next.para1 = You do not need to follow up by sending another message or by calling us.
