@@ -61,7 +61,8 @@
         @components.input_textarea(
             field = form("content"),
             label = messages("enquiry.question"),
-            initialValue = defaultEnquiryDetails.content
+            initialValue = defaultEnquiryDetails.content,
+            hint = Some(messages("enquiry.hint"))
         )
 
         @components.submit_button()
