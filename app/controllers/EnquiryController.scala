@@ -59,7 +59,7 @@ class EnquiryController @Inject()(appConfig: AppConfig,
 
   def onSubmit(): Action[AnyContent] = Action.async {
     implicit request =>
-      authorised(Enrolment("HMRC-NI")) {
+      // authorised(Enrolment("HMRC-NI")) {
         form.bindFromRequest().fold(
           (formWithErrors: Form[EnquiryDetails]) => {
             val returnedErrorForm = if(emailConfirmationError(formWithErrors)) {
@@ -82,7 +82,35 @@ class EnquiryController @Inject()(appConfig: AppConfig,
               }
             }
         )
-      }
+      // }
+  }
+
+  def onSubmit2(): Action[AnyContent] = Action.async {
+    implicit request =>
+      // authorised(Enrolment("HMRC-NI")) {
+        form.bindFromRequest().fold(
+          (formWithErrors: Form[EnquiryDetails]) => {
+            val returnedErrorForm = if(emailConfirmationError(formWithErrors)) {
+                appendEmailConfirmationError(formWithErrors)
+              } else { formWithErrors }
+            Future.successful(BadRequest(enquiry(appConfig, returnedErrorForm, rebuildFailedForm(formWithErrors))))
+          },
+            enquiryDetails => {
+              if(enquiryDetails.email != enquiryDetails.confirmEmail) {
+                Future.successful(BadRequest(enquiry(appConfig, appendEmailConfirmationError(form), enquiryDetails)))
+              } else {
+                twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
+                  case CREATED => extractId(response) match {
+                    case Right(id) => Ok(enquiry_submitted(appConfig, id.id))
+                    case Left(error) => Ok(error_template("Error", "There was an error:", error.text, appConfig))
+                  }
+                  case _ =>
+                    Ok(error_template("Error", "There was an error:", "Error sending enquiry details", appConfig))
+                })
+              }
+            }
+        )
+      // }
   }
 
   def messagesRedirect = Action {

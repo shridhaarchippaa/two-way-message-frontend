@@ -11,4 +11,6 @@ GET     /messages/personal-account                      controllers.EnquiryContr
 
 POST    /message/customer/:queueId/:replyTo/reply       controllers.ReplyController.onSubmit(queueId, replyTo)
 GET     /message/customer/:queueId/:replyTo/reply       controllers.ReplyController.onPageLoad(queueId, replyTo)
+GET     /message/customer/:queueId/:replyTo/reply-form-partial       controllers.ReplyController.replyFormPartial(queueId, replyTo)
+POST     /message/customer/:queueId/:replyTo/reply-form-partial       controllers.ReplyController.onSubmit2(queueId, replyTo)
 

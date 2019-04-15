@@ -29,7 +29,7 @@ import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import utils.MessageRenderer
-import views.html.{enquiry_submitted, error_template, reply}
+import views.html.{enquiry_submitted, error_template, reply, reply_partial }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -58,9 +58,16 @@ class ReplyController @Inject()(appConfig: AppConfig,
       }
   }
 
+  def replyFormPartial(queue: String, replyTo: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      // authorised(Enrolment("HMRC-NI")) {
+          Future.successful(Ok(reply_partial(queue, replyTo, appConfig, form, ReplyDetails(""))))
+      // }
+  }
+
   def onSubmit(queueId: String, replyTo: String): Action[AnyContent] = Action.async {
     implicit request =>
-      authorised(Enrolment("HMRC-NI")) {
+      // authorised(Enrolment("HMRC-NI")) {
         form.bindFromRequest().fold(
           (formWithErrors: Form[ReplyDetails]) => {
             val returnedErrorForm = formWithErrors
@@ -81,7 +88,33 @@ class ReplyController @Inject()(appConfig: AppConfig,
               case _ => Ok(error_template("Error", "There was an error:", "Error sending reply details", appConfig))
             })
         )
-      }
+      // }
+  }
+
+  def onSubmit2(queueId: String, replyTo: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      // authorised(Enrolment("HMRC-NI")) {
+        form.bindFromRequest().fold(
+          (formWithErrors: Form[ReplyDetails]) => {
+            val returnedErrorForm = formWithErrors
+              for {
+                  messages <- twoWayMessageConnector.getMessages(replyTo)
+                  (before, after) = messages.reverse.headOption
+                      .fold((Html(""), Html(""))){m =>
+                          (messageRenderer.renderMessage(m),
+                              messageRenderer.renderMessages(messages.reverse.tail))}
+              } yield BadRequest(reply(queueId, replyTo, appConfig, returnedErrorForm, rebuildFailedForm(formWithErrors),before, after))
+          },
+          replyDetails =>
+            twoWayMessageConnector.postReplyMessage(replyDetails, queueId, replyTo).map(response => response.status match {
+              case CREATED => extractId(response) match {
+                case Right(id) => Ok(enquiry_submitted(appConfig, id.id))
+                case Left(error) => Ok(error_template("Error", "There was an error:", error.text, appConfig))
+              }
+              case _ => Ok(error_template("Error", "There was an error:", "Error sending reply details", appConfig))
+            })
+        )
+      // }
   }
 
   def extractId(response: HttpResponse): Either[MessageError, Identifier] = {
