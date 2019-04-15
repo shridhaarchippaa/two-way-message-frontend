@@ -49,6 +49,7 @@ enquiry.email = Your email
 enquiry.confirmEmail = Confirm email
 enquiry.whatis = Type of the question
 enquiry.question = What is your question?
+enquiry.hintText = More detail will help us answer your question quickly
 
 enquiry.success.title = Message sent
 enquiry.success.heading = Message sent
