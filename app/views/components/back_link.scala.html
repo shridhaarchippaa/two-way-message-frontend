@@ -17,5 +17,5 @@
 @()(implicit messages: Messages)
 
 <div class="js-visible">
-  <p><a id="back-link" class="link-back" onclick="javascript:window.history.go(-1); return false;" href="#">@messages("site.back")</a></p>
+  <p><a id="back-link" class="link-back" onclick="history.go(-1);event.preventDefault();" href="#">@messages("site.back")</a></p>
 </div>
