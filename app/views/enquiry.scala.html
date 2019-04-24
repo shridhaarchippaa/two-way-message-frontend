@@ -48,8 +48,11 @@
 
         @components.input_text(
             field = form("email"),
+            maxlength = Option(256),
             label = messages("enquiry.email"),
-            initialValue = defaultEnquiryDetails.email
+            overrideStyle = "width: 67%",
+            initialValue = defaultEnquiryDetails.email,
+            hint = Some(messages("enquiry.question.hint"))
         )
 
 
