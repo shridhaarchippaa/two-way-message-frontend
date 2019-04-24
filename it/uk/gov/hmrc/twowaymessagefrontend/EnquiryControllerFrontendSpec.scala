@@ -102,7 +102,7 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
         Future.successful("email@dummy.com")
       }
 
-      val enquiryDetails = EnquiryDetails("p800", "A question", "A question from the customer", "test@dummy.com", "test@dummy.com")
+      val enquiryDetails = EnquiryDetails("p800", "A question", "A question from the customer", "test@dummy.com")
       when(twoWayMessageConnector.postMessage( ArgumentMatchers.eq(enquiryDetails))(ArgumentMatchers.any[HeaderCarrier])) thenReturn {
         val x = Json.parse( """{ "id":"5c18eb166f0000110204b160" }""".stripMargin )
 
@@ -113,8 +113,7 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
 
       textField("subject").value = "A question"
       textField("email").value = "test@dummy.com"
-      textField("confirmEmail").value = "test@dummy.com"
-      textArea("content").value = "A question from the customer"
+      textArea("question").value = "A question from the customer"
 
 
       click on find(id("submit")).value
@@ -132,7 +131,7 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
         Future.successful("email@dummy.com")
       }
 
-      val enquiryDetails = EnquiryDetails("p800", "A question", "A question from the customer", "test@dummy.com", "test@dummy.com")
+      val enquiryDetails = EnquiryDetails("p800", "A question", "A question from the customer", "test@dummy.com")
       when(twoWayMessageConnector.postReplyMessage( ArgumentMatchers.any(), ArgumentMatchers.eq("p800"), ArgumentMatchers.eq("5c8a31931d00000b00a30bdc"))(ArgumentMatchers.any[HeaderCarrier])).thenReturn {
         val x = Json.parse( """{ "id":"5c18eb166f0000110204b160" }""".stripMargin )
         Future.successful(HttpResponse(play.api.http.Status.CREATED, Some(x)))
@@ -173,65 +172,6 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
 //      eventually { pageSource must include ("Subject has a maximum length of 65 characters") }
 //    }
 
-
-
-  }
-
-  "email fields" should {
-    "display an error if nothing entered in email and confirmEmail" in {
-      stubLogin("AB123456C")
-
-      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
-
-      textField("email").value = ""
-      textField("confirmEmail").value = ""
-
-      click on find(id("submit")).value
-
-      eventually { pageSource must include ("Email is invalid") }
-    }
-
-
-    "display an error if something entered in email and nothing in confirmEmail" in {
-      stubLogin("AB123456C")
-
-      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
-
-      textField("email").value = "test@test.com"
-      textField("confirmEmail").value = ""
-
-      click on find(id("submit")).value
-
-      eventually { pageSource must include ("Email is invalid") }
-    }
-
-    "display an error if nothing entered in email and something in confirmEmail" in {
-      stubLogin("AB123456C")
-
-      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
-
-      textField("email").value = ""
-      textField("confirmEmail").value = "test@test.com"
-
-      click on find(id("submit")).value
-
-      eventually { pageSource must include ("Email is invalid") }
-    }
-
-    "display an error if email and confirmEmail do not match" in {
-      stubLogin("AB123456C")
-
-      go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
-
-      textField("email").value = "email@email.com"
-      textField("confirmEmail").value = "confirmEmail@confirmEmail.com"
-
-      click on find(id("submit")).value
-
-      eventually { pageSource must include ("Email addresses must match. Check them and try again.") }
-    }
-
-
     "should include preferances email addr as we have it" in {
       mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(Some("AB123456C")))
       mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some("AB123456C")))
@@ -243,10 +183,7 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
       go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
 
       eventually { textField("email").value must include ("email@dummy.com") }
-      eventually { textField("confirmEmail").value must include ("email@dummy.com") }
     }
-
-
 
     "content field"  should {
       "display error if nothing entered" in {
@@ -254,7 +191,7 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
 
         go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
 
-        textArea("content").value = ""
+        textArea("question").value = ""
 
         click on find(id("submit")).value
 

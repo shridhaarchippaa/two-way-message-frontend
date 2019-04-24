@@ -21,6 +21,7 @@ error.non_numeric = Give a value using only numbers
 error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
+error.question = Please enter a question
 
 index.title = two-way-message-frontend
 index.heading = two-way-message-frontend

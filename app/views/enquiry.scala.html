@@ -52,16 +52,11 @@
             initialValue = defaultEnquiryDetails.email
         )
 
-        @components.input_text(
-            field = form("confirmEmail"),
-            label = messages("enquiry.confirmEmail"),
-            initialValue = defaultEnquiryDetails.confirmEmail
-        )
 
         @components.input_textarea(
-            field = form("content"),
+            field = form("question"),
             label = messages("enquiry.question"),
-            initialValue = defaultEnquiryDetails.content,
+            initialValue = defaultEnquiryDetails.question,
             hint = Some(messages("enquiry.hint"))
         )
 
