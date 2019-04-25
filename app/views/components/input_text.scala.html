@@ -22,7 +22,8 @@
         labelClass: Option[String] = None,
         maxlength: Option[Int] = None,
         initialValue: String,
-        overrideStyle: String = ""
+        overrideStyle: String = "",
+        typeAttribute: String
 )(implicit messages: Messages)
 
 
@@ -39,7 +40,7 @@
     <div class="form-control-wrapper">
         <input
         class="form-control @inputClass"
-        type="text"
+        type="@{typeAttribute}"
         id="@{field.id}"
         name="@{field.name}"
         value="@initialValue"
