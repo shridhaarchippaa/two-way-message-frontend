@@ -112,7 +112,7 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
       go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
 
       textField("subject").value = "A question"
-      textField("email").value = "test@dummy.com"
+      emailField("email").value = "test@dummy.com"
       textArea("question").value = "A question from the customer"
 
 
@@ -182,7 +182,7 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
 
       go to s"http://localhost:$port/two-way-message-frontend/message/p800/make_enquiry"
 
-      eventually { textField("email").value must include ("email@dummy.com") }
+      eventually { emailField("email").value must include ("email@dummy.com") }
     }
 
     "content field"  should {
