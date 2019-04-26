@@ -42,7 +42,7 @@ class TwoWayMessageConnector @Inject()(httpClient: HttpClient,
     val message = TwoWayMessage(
       ContactDetails(details.email),
       details.subject,
-      details.content
+      details.question
     )
     httpClient.POST(s"$twoWayMessageBaseUrl/two-way-message/message/customer/${details.queue}/submit", message)
   }
