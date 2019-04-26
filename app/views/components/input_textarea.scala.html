@@ -21,7 +21,8 @@
         inputClass: Option[String] = None,
         labelClass: Option[String] = None,
         initialValue: String,
-        hint: Option[String] = None
+        hint: Option[String] = None,
+        spellcheck: Boolean
 )(implicit messages: Messages)
 
 
@@ -40,6 +41,7 @@
     class="form-control form-control--full-width @inputClass"
     id="@{field.id}"
     name="@{field.id}"
+    spellcheck="@{spellcheck}"
     aria-describedby="error-message-@{field.id}-input"
     rows="10"
     >@initialValue</textarea>

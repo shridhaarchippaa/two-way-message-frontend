@@ -43,13 +43,20 @@
             label = messages("enquiry.subject"),
             maxlength = Option(65),
             overrideStyle = "width: 100%",
-            initialValue = defaultEnquiryDetails.subject
+            initialValue = defaultEnquiryDetails.subject,
+            typeAttribute = "text",
+            spellcheck = true
         )
 
         @components.input_text(
             field = form("email"),
+            maxlength = Option(256),
             label = messages("enquiry.email"),
-            initialValue = defaultEnquiryDetails.email
+            overrideStyle = "width: 67%",
+            initialValue = defaultEnquiryDetails.email,
+            hint = Some(messages("enquiry.question.hint")),
+            typeAttribute = "email",
+            spellcheck = false
         )
 
 
@@ -57,7 +64,8 @@
             field = form("question"),
             label = messages("enquiry.question"),
             initialValue = defaultEnquiryDetails.question,
-            hint = Some(messages("enquiry.hint"))
+            hint = Some(messages("enquiry.hint")),
+            spellcheck = true
         )
 
         @components.submit_button()
