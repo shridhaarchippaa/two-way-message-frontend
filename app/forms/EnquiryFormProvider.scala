@@ -35,7 +35,8 @@ class EnquiryFormProvider @Inject()( messagesApi: MessagesApi)   {
         "subject" -> nonEmptyTextWithError("Please enter a subject").verifying( subjectConstraint),
         "content" -> nonEmptyTextWithError("Please enter a question").verifying( contentConstraint),
         "email" -> email,
-        "confirmEmail" -> email
+        "confirmEmail" -> email,
+        "backCode" -> optional(nonEmptyText)
       )(EnquiryDetails.apply)(EnquiryDetails.unapply)
     )
 

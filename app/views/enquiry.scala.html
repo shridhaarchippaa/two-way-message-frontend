@@ -26,7 +26,7 @@
     appConfig = appConfig,
     bodyClasses = None) {
 
-    @components.back_link()
+    @components.back_link(defaultEnquiryDetails.backCode)
 
     @components.error_summary(form.errors)
 
@@ -37,6 +37,9 @@
     @helpers.form(action = EnquiryController.onSubmit(), 'autoComplete -> "off") {
 
         <input type="hidden" id='@{form("queue").id}' name='@{form("queue").name}' value="@{defaultEnquiryDetails.queue}">
+        @if(defaultEnquiryDetails.backCode.nonEmpty) {
+        <input type="hidden" id='@{form("backCode").id}' name='@{form("backCode").name}' value="@{defaultEnquiryDetails.backCode.get}">
+        }
 
         @components.input_text(
             field = form("subject"),
