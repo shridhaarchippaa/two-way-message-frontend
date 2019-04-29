@@ -54,7 +54,7 @@ class EnquiryController @Inject()(appConfig: AppConfig,
     implicit request =>
       authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.nino) {
         case Some(nino) =>
-          val backCode:Option[String] = request.queryString.get(BACKCODE).map( _.head)//.map( s => new String(Base64.getDecoder.decode(s)))
+          val backCode:Option[String] = request.queryString.get(BACKCODE).map( _.head)
 
           preferencesConnector.getPreferredEmail(nino).map(preferredEmail => {
               Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", preferredEmail, preferredEmail, backCode)) )
