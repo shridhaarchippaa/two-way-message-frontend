@@ -57,7 +57,7 @@ class EnquiryController @Inject()(appConfig: AppConfig,
           val backCode:Option[String] = request.queryString.get(BACKCODE).map( _.head)
 
           preferencesConnector.getPreferredEmail(nino).map(preferredEmail => {
-              Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", preferredEmail, preferredEmail, backCode)) )
+              Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", preferredEmail, backCode)))
             }
           )
         case _ => Future.successful(Forbidden)
@@ -69,15 +69,9 @@ class EnquiryController @Inject()(appConfig: AppConfig,
       authorised(Enrolment("HMRC-NI")) {
         form.bindFromRequest().fold(
           (formWithErrors: Form[EnquiryDetails]) => {
-            val returnedErrorForm = if(emailConfirmationError(formWithErrors)) {
-                appendEmailConfirmationError(formWithErrors)
-              } else { formWithErrors }
-            Future.successful(BadRequest(enquiry(appConfig, returnedErrorForm, rebuildFailedForm(formWithErrors))))
+            Future.successful(BadRequest(enquiry(appConfig, formWithErrors, rebuildFailedForm(formWithErrors))))
           },
             enquiryDetails => {
-              if(enquiryDetails.email != enquiryDetails.confirmEmail) {
-                Future.successful(BadRequest(enquiry(appConfig, appendEmailConfirmationError(form), enquiryDetails)))
-              } else {
                 twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
                   case CREATED => extractId(response) match {
                     case Right(id) => Ok(enquiry_submitted(appConfig, id.id))
@@ -87,7 +81,6 @@ class EnquiryController @Inject()(appConfig: AppConfig,
                     Ok(error_template("Error", "There was an error:", "Error sending enquiry details", appConfig))
                 })
               }
-            }
         )
       }
   }
@@ -107,24 +100,12 @@ class EnquiryController @Inject()(appConfig: AppConfig,
     }
   }
 
-  private def emailConfirmationError(form: Form[EnquiryDetails]) = {
-    val email = form.data.get("email")
-    val confirmEmail = form.data.get("confirmEmail")
-    (email.isEmpty || confirmEmail.isEmpty) || email.get != confirmEmail.get
-  }
-
-  private def appendEmailConfirmationError(form: Form[EnquiryDetails]) = {
-    val appendedErrors = form.errors ++ Seq(FormError("confirmEmail", "Email addresses must match. Check them and try again."))
-    form.copy(errors = appendedErrors)
-  }
-
   private def rebuildFailedForm(formWithErrors: Form[EnquiryDetails]) = {
       EnquiryDetails(
         formWithErrors.data.getOrElse("queue", ""),
         formWithErrors.data.getOrElse("subject", ""),
-        formWithErrors.data.getOrElse("content", ""),
-        formWithErrors.data.getOrElse("email", ""),
-        formWithErrors.data.getOrElse("confirmEmail", ""))
+        formWithErrors.data.getOrElse("question", ""),
+        formWithErrors.data.getOrElse("email", ""))
     }
 
 

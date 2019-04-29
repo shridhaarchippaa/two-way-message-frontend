@@ -46,26 +46,29 @@
             label = messages("enquiry.subject"),
             maxlength = Option(65),
             overrideStyle = "width: 100%",
-            initialValue = defaultEnquiryDetails.subject
+            initialValue = defaultEnquiryDetails.subject,
+            typeAttribute = "text",
+            spellcheck = true
         )
 
         @components.input_text(
             field = form("email"),
+            maxlength = Option(256),
             label = messages("enquiry.email"),
-            initialValue = defaultEnquiryDetails.email
+            overrideStyle = "width: 67%",
+            initialValue = defaultEnquiryDetails.email,
+            hint = Some(messages("enquiry.question.hint")),
+            typeAttribute = "email",
+            spellcheck = false
         )
 
-        @components.input_text(
-            field = form("confirmEmail"),
-            label = messages("enquiry.confirmEmail"),
-            initialValue = defaultEnquiryDetails.confirmEmail
-        )
 
         @components.input_textarea(
-            field = form("content"),
+            field = form("question"),
             label = messages("enquiry.question"),
-            initialValue = defaultEnquiryDetails.content,
-            hint = Some(messages("enquiry.hint"))
+            initialValue = defaultEnquiryDetails.question,
+            hint = Some(messages("enquiry.hint")),
+            spellcheck = true
         )
 
         @components.submit_button()
