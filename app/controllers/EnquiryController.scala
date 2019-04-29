@@ -22,7 +22,6 @@ import config.AppConfig
 import connectors.{PreferencesConnector, TwoWayMessageConnector}
 import forms.EnquiryFormProvider
 import javax.inject.{Inject, Singleton}
-
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
@@ -32,6 +31,7 @@ import views.html.{enquiry, enquiry_submitted, error_template}
 
 import scala.concurrent.{ExecutionContext, Future}
 import models.{EnquiryDetails, Identifier, MessageError}
+import org.omg.PortableInterceptor.SUCCESSFUL
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.HttpResponse
 
@@ -59,6 +59,8 @@ class EnquiryController @Inject()(appConfig: AppConfig,
             Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", email), waitTime))
           }
         case _ => Future.successful(Forbidden)
+      } recoverWith {
+        case _ => Future.successful(InternalServerError)
       }
     }
 

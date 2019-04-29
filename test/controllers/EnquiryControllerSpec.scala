@@ -64,6 +64,8 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector wi
       })
       .build()
   }
+  when(mockTwoWayMessageConnector.getWaitTime(any[String])(any[HeaderCarrier])).thenReturn(Future.successful("7 days"))
+  when(mockPreferencesConnector.getPreferredEmail(any[String])(any[HeaderCarrier])).thenReturn(Future.successful("preferredEmail@test.com"))
 
   val controller = injector.instanceOf[EnquiryController]
 
@@ -85,21 +87,6 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector wi
       val bad2wmPostMessageResponse = Json.parse("{}")
       val result = controller.extractId(HttpResponse(Status.CREATED, Some(bad2wmPostMessageResponse)))
       result.left.get shouldBe MessageError("Missing reference")
-    }
-  }
-
-  // Please see integration tests for auth failure scenarios as these are handled by the ErrorHandler class
-  "calling onPageLoad()" should {
-
-    "return 200 (OK) when presented with a valid Nino (HMRC-NI) enrolment from auth-client" in {
-      val nino = Nino("AB123456C")
-      when(mockPreferencesConnector.getPreferredEmail(any[String])(any[HeaderCarrier])).thenReturn(Future.successful("preferredEmail@test.com"))
-      mockAuthorise(Enrolment("HMRC-NI"), Retrievals.nino)(Future.successful(Some(nino.value)))
-      val result = call(controller.onPageLoad("P800"), fakeRequest)
-
-      status(result) shouldBe Status.OK
-      val document = Jsoup.parse(contentAsString(result))
-      document.getElementsByClass("heading-large").text().contains("Send your message") shouldBe true
     }
   }
 
@@ -156,13 +143,6 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector wi
       val result = await(call(controller.onSubmit(), requestWithFormData))
       result.header.status shouldBe Status.OK
 //      result.header.headers("Location") shouldBe "/two-way-message-frontend/message/submitted?maybeError=Missing+reference"
-    }
-
-    "return 400 (BAD_REQUEST) when presented with invalid form data" in {
-      val nino = Nino("AB123456C")
-      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
-      val result = call(controller.onSubmit(), badRequestWithFormData)
-      status(result) shouldBe Status.BAD_REQUEST
     }
 
     "return 200 (OK) when two-way-message service returns a different status than 201 (CREATED)" in {

@@ -47,8 +47,7 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
 
   lazy val mockTwoWayMessageConnector = mock[TwoWayMessageConnector]
   lazy val mockMessageRenderer = mock[MessageRenderer]
-  lazy val timeResponse = mock[HttpResponse]
-  when(timeResponse.body).thenReturn("7 days")
+  lazy val timeResponse = "7 days"
 
   when(mockMessageRenderer.renderMessage(any())).thenReturn(Html(""))
   when(mockMessageRenderer.renderMessages(any())).thenReturn(Html(""))

@@ -63,10 +63,11 @@ class TwoWayMessageConnector @Inject()(httpClient: HttpClient,
           msgList => Future.successful(msgList))
       }
 
-  implicit val egg: Format[WaitTimeResponse] = Json.format[WaitTimeResponse]
+  implicit val waitTimeResponseJson: Format[WaitTimeResponse] = Json.format[WaitTimeResponse]
 
   case class WaitTimeResponse(responseTime: String)
 
   def getWaitTime(formId: String)(implicit hc: HeaderCarrier): Future[String] =
-    httpClient.GET[WaitTimeResponse](s"${twoWayMessageBaseUrl}/two-way-message/message/admin/$formId/response-time").map(e => e.responseTime)
+    httpClient.GET[WaitTimeResponse](s"${twoWayMessageBaseUrl}/two-way-message/message/admin/$formId/response-time")
+      .map(e => e.responseTime)
 }
