@@ -22,10 +22,7 @@
         labelClass: Option[String] = None,
         maxlength: Option[Int] = None,
         initialValue: String,
-        overrideStyle: String = "",
-        typeAttribute: String,
-        spellcheck: Boolean
-
+        overrideStyle: String = ""
 )(implicit messages: Messages)
 
 
@@ -42,11 +39,10 @@
     <div class="form-control-wrapper">
         <input
         class="form-control @inputClass"
-        type="@{typeAttribute}"
+        type="text"
         id="@{field.id}"
         name="@{field.name}"
         value="@initialValue"
-        spellcheck="@{spellcheck}"
         @if(field.hasErrors){aria-describedby="error-message-@{field.id}-input"}
         @if(maxlength.nonEmpty){ maxlength="@{maxlength.get}" }
         style="@{overrideStyle}"

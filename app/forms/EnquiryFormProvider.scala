@@ -33,8 +33,9 @@ class EnquiryFormProvider @Inject()( messagesApi: MessagesApi)   {
       mapping(
         "queue" -> nonEmptyText,
         "subject" -> nonEmptyTextWithError("Please enter a subject").verifying( subjectConstraint),
-        "question" -> nonEmptyTextWithError("Please enter a question").verifying( contentConstraint),
+        "content" -> nonEmptyTextWithError("Please enter a question").verifying( contentConstraint),
         "email" -> email,
+        "confirmEmail" -> email,
         "backCode" -> optional(nonEmptyText)
       )(EnquiryDetails.apply)(EnquiryDetails.unapply)
     )
@@ -56,7 +57,7 @@ class EnquiryFormProvider @Inject()( messagesApi: MessagesApi)   {
       }
   })
 
-  val contentConstraint: Constraint[String] = Constraint("constraints.question")({
+  val contentConstraint: Constraint[String] = Constraint("constraints.content")({
     plainText =>
       if (plainText.length <= 75000) {
         Valid

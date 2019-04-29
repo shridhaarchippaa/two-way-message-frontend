@@ -68,13 +68,14 @@ class TwoWayMessageConnectorSpec extends SpecBase with Fixtures {
       "queue",
       "my subject",
       "my question",
+      "email@test.com",
       "email@test.com"
     )
 
     val message = TwoWayMessage(
       ContactDetails(details.email),
       details.subject,
-      details.question
+      details.content
     )
 
     "respond with a mongo id after a successful call to two-way-message service results in a message creation from a valid payload" in {
@@ -119,13 +120,14 @@ class TwoWayMessageConnectorSpec extends SpecBase with Fixtures {
       "queue",
       "my subject",
       "my question",
+      "email@test.com",
       "email@test.com"
     )
 
     val message = TwoWayMessage(
       ContactDetails(details.email),
       details.subject,
-      details.question
+      details.content
     )
 
     val replyMessage = TwoWayMessageReply("Hello world")
