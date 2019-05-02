@@ -16,6 +16,8 @@
 
 package controllers
 
+import java.util.Base64
+
 import config.AppConfig
 import connectors.{PreferencesConnector, TwoWayMessageConnector}
 import forms.EnquiryFormProvider
@@ -23,7 +25,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, QueryStringBindable}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html.{enquiry, enquiry_submitted, error_template}
 
@@ -33,6 +35,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.HttpResponse
 
 import ExecutionContext.Implicits.global
+import scala.util.Try
 
 @Singleton
 class EnquiryController @Inject()(appConfig: AppConfig,
@@ -43,14 +46,18 @@ class EnquiryController @Inject()(appConfig: AppConfig,
                                   preferencesConnector: PreferencesConnector)
   extends FrontendController with AuthorisedFunctions with I18nSupport {
 
+  private final val BACKCODE = "backCode"
+
   val form: Form[EnquiryDetails] = formProvider()
 
   def onPageLoad(queue: String): Action[AnyContent] = Action.async {
     implicit request =>
       authorised(Enrolment("HMRC-NI")).retrieve(Retrievals.nino) {
         case Some(nino) =>
+          val backCode:Option[String] = request.queryString.get(BACKCODE).map( _.head)
+
           preferencesConnector.getPreferredEmail(nino).map(preferredEmail => {
-              Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", preferredEmail)))
+              Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", preferredEmail, preferredEmail, backCode)) )
             }
           )
         case _ => Future.successful(Forbidden)
@@ -62,9 +69,15 @@ class EnquiryController @Inject()(appConfig: AppConfig,
       authorised(Enrolment("HMRC-NI")) {
         form.bindFromRequest().fold(
           (formWithErrors: Form[EnquiryDetails]) => {
-            Future.successful(BadRequest(enquiry(appConfig, formWithErrors, rebuildFailedForm(formWithErrors))))
+            val returnedErrorForm = if(emailConfirmationError(formWithErrors)) {
+                appendEmailConfirmationError(formWithErrors)
+              } else { formWithErrors }
+            Future.successful(BadRequest(enquiry(appConfig, returnedErrorForm, rebuildFailedForm(formWithErrors))))
           },
             enquiryDetails => {
+              if(enquiryDetails.email != enquiryDetails.confirmEmail) {
+                Future.successful(BadRequest(enquiry(appConfig, appendEmailConfirmationError(form), enquiryDetails)))
+              } else {
                 twoWayMessageConnector.postMessage(enquiryDetails).map(response => response.status match {
                   case CREATED => extractId(response) match {
                     case Right(id) => Ok(enquiry_submitted(appConfig, id.id))
@@ -74,6 +87,7 @@ class EnquiryController @Inject()(appConfig: AppConfig,
                     Ok(error_template("Error", "There was an error:", "Error sending enquiry details", appConfig))
                 })
               }
+            }
         )
       }
   }
@@ -93,11 +107,45 @@ class EnquiryController @Inject()(appConfig: AppConfig,
     }
   }
 
+  private def emailConfirmationError(form: Form[EnquiryDetails]) = {
+    val email = form.data.get("email")
+    val confirmEmail = form.data.get("confirmEmail")
+    (email.isEmpty || confirmEmail.isEmpty) || email.get != confirmEmail.get
+  }
+
+  private def appendEmailConfirmationError(form: Form[EnquiryDetails]) = {
+    val appendedErrors = form.errors ++ Seq(FormError("confirmEmail", "Email addresses must match. Check them and try again."))
+    form.copy(errors = appendedErrors)
+  }
+
   private def rebuildFailedForm(formWithErrors: Form[EnquiryDetails]) = {
       EnquiryDetails(
         formWithErrors.data.getOrElse("queue", ""),
         formWithErrors.data.getOrElse("subject", ""),
-        formWithErrors.data.getOrElse("question", ""),
-        formWithErrors.data.getOrElse("email", ""))
+        formWithErrors.data.getOrElse("content", ""),
+        formWithErrors.data.getOrElse("email", ""),
+        formWithErrors.data.getOrElse("confirmEmail", ""))
     }
+
+
+
+  case class QueryParams( backCode: Option[String] = None)
+
+  implicit def queryStringBindable(implicit stringBinder: QueryStringBindable[String]) = new QueryStringBindable[QueryParams] {
+    override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, QueryParams]] = {
+      for {
+        backCode <- stringBinder.bind("backCode", params)
+      } yield {
+        backCode match {
+          case Right(backCode) => Right(QueryParams(Some(backCode)))
+          case _ => Left("Unable to bind an AgeRange")
+        }
+      }
+    }
+    override def unbind(key: String, ageRange: QueryParams): String = {
+      stringBinder.unbind("backCode", ageRange.backCode.getOrElse(""))
+    }
+  }
+
+
 }

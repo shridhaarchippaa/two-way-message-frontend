@@ -26,7 +26,7 @@
     appConfig = appConfig,
     bodyClasses = None) {
 
-    @components.back_link()
+    @components.back_link(defaultEnquiryDetails.backCode)
 
     @components.error_summary(form.errors)
 
@@ -37,35 +37,35 @@
     @helpers.form(action = EnquiryController.onSubmit(), 'autoComplete -> "off") {
 
         <input type="hidden" id='@{form("queue").id}' name='@{form("queue").name}' value="@{defaultEnquiryDetails.queue}">
+        @if(defaultEnquiryDetails.backCode.nonEmpty) {
+        <input type="hidden" id='@{form("backCode").id}' name='@{form("backCode").name}' value="@{defaultEnquiryDetails.backCode.get}">
+        }
 
         @components.input_text(
             field = form("subject"),
             label = messages("enquiry.subject"),
             maxlength = Option(65),
             overrideStyle = "width: 100%",
-            initialValue = defaultEnquiryDetails.subject,
-            typeAttribute = "text",
-            spellcheck = true
+            initialValue = defaultEnquiryDetails.subject
         )
 
         @components.input_text(
             field = form("email"),
-            maxlength = Option(256),
             label = messages("enquiry.email"),
-            overrideStyle = "width: 67%",
-            initialValue = defaultEnquiryDetails.email,
-            hint = Some(messages("enquiry.question.hint")),
-            typeAttribute = "email",
-            spellcheck = false
+            initialValue = defaultEnquiryDetails.email
         )
 
+        @components.input_text(
+            field = form("confirmEmail"),
+            label = messages("enquiry.confirmEmail"),
+            initialValue = defaultEnquiryDetails.confirmEmail
+        )
 
         @components.input_textarea(
-            field = form("question"),
+            field = form("content"),
             label = messages("enquiry.question"),
-            initialValue = defaultEnquiryDetails.question,
-            hint = Some(messages("enquiry.hint")),
-            spellcheck = true
+            initialValue = defaultEnquiryDetails.content,
+            hint = Some(messages("enquiry.hint"))
         )
 
         @components.submit_button()
