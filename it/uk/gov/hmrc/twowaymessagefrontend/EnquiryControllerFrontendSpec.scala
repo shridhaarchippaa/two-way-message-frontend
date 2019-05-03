@@ -35,7 +35,8 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.OptionalRetrieval
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.twowaymessagefrontend.util.{ControllerSpecBase, MockAuthConnector}
-
+import play.api.mvc.AnyContentAsEmpty
+import play.api.test.FakeRequest
 import scala.concurrent.Future
 
 class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthConnector with HtmlUnitFactory with   OneBrowserPerSuite{
@@ -243,6 +244,45 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
     "call personalAccountRedirect for redirection" in {
       val result = await(call(enquiryController.messagesRedirect, fakeRequest))
       result.header.status mustBe (303)
+    }
+  }
+
+  import play.api.test.Helpers.{GET, contentAsString, route}
+
+  "back link" should {
+    "go back to previous page when no parameter is passed" in {
+      mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(Some("AB123456C")))
+      when( preferencesConnector.getPreferredEmail( ArgumentMatchers.eq("AB123456C") )(ArgumentMatchers.any[HeaderCarrier])) thenReturn {
+        Future.successful("email@dummy.com")
+      }
+
+      val result = call(enquiryController.onPageLoad("p800"), fakeRequest)
+      contentAsString(result) must include ("javascript:window.history.back()")
+    }
+
+    "go back to a given location when something is passed" in {
+      mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(Some("AB123456C")))
+      when( preferencesConnector.getPreferredEmail( ArgumentMatchers.eq("AB123456C") )(ArgumentMatchers.any[HeaderCarrier])) thenReturn {
+        Future.successful("email@dummy.com")
+      }
+
+      val aFakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, "/message/p800/make_enquiry?backCode=SGVsbG8gV29ybGQ%3D")
+
+      val result = call(enquiryController.onPageLoad("p800"), aFakeRequest)
+      contentAsString(result) must include ("Hello World")
+    }
+
+    "if something passed but is invalid then use defaults" in {
+      mockAuthorise(Enrolment("HMRC-NI"), OptionalRetrieval("nino", Reads.StringReads))(Future.successful(Some("AB123456C")))
+      when( preferencesConnector.getPreferredEmail( ArgumentMatchers.eq("AB123456C") )(ArgumentMatchers.any[HeaderCarrier])) thenReturn {
+        Future.successful("email@dummy.com")
+      }
+
+      val aFakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, "/message/p800/make_enquiry?backCode=hello")
+
+      val result = call(enquiryController.onPageLoad("p800"), aFakeRequest)
+      contentAsString(result) must include ("javascript:window.history.back()")
+
     }
   }
 
