@@ -39,7 +39,8 @@
             field = form("content"),
             label = messages("reply.question"),
             initialValue = defaultReplyDetails.content,
-            hint = Some(messages("reply.hint"))
+            hint = Some(messages("reply.hint")),
+            spellcheck = true
         )
 
         @components.submit_button()
