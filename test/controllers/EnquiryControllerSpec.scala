@@ -109,16 +109,14 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector wi
     val requestWithFormData: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
       "queue" -> "queue1",
       "subject" -> "subject",
-      "content" -> "content",
-      "email" -> "test@test.com",
-      "confirmEmail" -> "test@test.com"
+      "question" -> "question",
+      "email" -> "test@test.com"
     )
 
     val enquiryDetails = EnquiryDetails(
       "queue1",
       "subject",
-      "content",
-      "test@test.com",
+      "question",
       "test@test.com"
     )
 
@@ -192,15 +190,13 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector wi
       val matchingEmails: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
         "queue" -> "queue1",
         "subject" -> "subject",
-        "content" -> "content",
-        "email" -> "test@test.com",
-        "confirmEmail" -> "test@test.com"
+        "question" -> "question",
+        "email" -> "test@test.com"
       )
       val enquiryDetails = EnquiryDetails(
         "queue1",
         "subject",
-        "content",
-        "test@test.com",
+        "question",
         "test@test.com"
       )
 
@@ -214,24 +210,6 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector wi
       result.header.status shouldBe Status.OK
     }
 
-    "Unsuccessful when emails do not match" in {
-      val nino = Nino("AB123456C")
-      mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
-
-      val nonMatchingEmails: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
-        "queue" -> "queue1",
-        "subject" -> "subject",
-        "content" -> "content",
-        "email" -> "test@test.com",
-        "confirmEmail" -> "test2@test.com"
-      )
-
-      val result = await(call(controller.onSubmit(), nonMatchingEmails))
-      val document = Jsoup.parse(contentAsString(result))
-      document.getElementsByClass("error-summary-list").html() shouldBe "<li><a href=\"#confirmEmail\">Email addresses must match. Check them and try again.</a></li>"
-      result.header.status shouldBe Status.BAD_REQUEST
-    }
-
     "Unsuccessful when subject is too long" in {
       val nino = Nino("AB123456C")
       mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
@@ -239,9 +217,8 @@ class EnquiryControllerSpec extends ControllerSpecBase with MockAuthConnector wi
       val nonMatchingEmails: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
         "queue" -> "queue1",
         "subject" -> "a" * 66,
-        "content" -> "test",
-        "email" -> "test@test.com",
-        "confirmEmail" -> "test@test.com"
+        "question" -> "test",
+        "email" -> "test@test.com"
       )
 
       val result = await(call(controller.onSubmit(), nonMatchingEmails))
