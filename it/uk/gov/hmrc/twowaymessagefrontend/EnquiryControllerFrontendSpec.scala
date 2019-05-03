@@ -46,17 +46,6 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
 
   when(twoWayMessageConnector.getMessages(any())(any())).thenReturn(Future.successful(List()))
 
-  override lazy val injector = new GuiceApplicationBuilder()
-    .configure(Configuration("metrics.enabled" -> false, "testserver.port" -> 8990))
-    .overrides(new AbstractModule with ScalaModule {
-      override def configure(): Unit = {
-        bind[AuthConnector].toInstance(mockAuthConnector)
-        bind[PreferencesConnector].toInstance(preferencesConnector)
-        bind[TwoWayMessageConnector].toInstance(twoWayMessageConnector)
-      }
-    })
-    .injector()
-
   override def fakeApplication(): Application = {
     new GuiceApplicationBuilder()
       .configure(Configuration("metrics.enabled" -> false))
@@ -69,7 +58,7 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
       }).build()
   }
 
-  val enquiryController = injector.instanceOf[EnquiryController]
+  val enquiryController = app.injector.instanceOf[EnquiryController]
 
   "Frontend test" should {
     "find the home page ok" in {
