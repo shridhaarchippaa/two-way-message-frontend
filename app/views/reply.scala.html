@@ -36,7 +36,7 @@
     @helpers.form(action = ReplyController.onSubmit(queueId, replyTo), 'autoComplete -> "off") {
 
         @components.input_textarea(
-            field = form("content"),
+            field = form("reply-input"),
             label = messages("reply.question"),
             initialValue = defaultReplyDetails.content,
             hint = Some(messages("reply.hint")),

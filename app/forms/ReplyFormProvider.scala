@@ -27,7 +27,7 @@ class ReplyFormProvider   {
   def apply(): Form[ReplyDetails] =
     Form(
       mapping(
-        "content" -> nonEmptyText(maxLength = CONTENT_MAX_LENGTH)
+        "reply-input" -> nonEmptyText(maxLength = CONTENT_MAX_LENGTH)
       )(ReplyDetails.apply)(ReplyDetails.unapply)
     )
 
