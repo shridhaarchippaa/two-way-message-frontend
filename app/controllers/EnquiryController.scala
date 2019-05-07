@@ -114,12 +114,12 @@ class EnquiryController @Inject()(appConfig: AppConfig,
       } yield {
         backCode match {
           case Right(backCode) => Right(QueryParams(Some(backCode)))
-          case _ => Left("Unable to bind an AgeRange")
+          case _ => Left("Unable find backCode value")
         }
       }
     }
-    override def unbind(key: String, ageRange: QueryParams): String = {
-      stringBinder.unbind("backCode", ageRange.backCode.getOrElse(""))
+    override def unbind(key: String, queryParams: QueryParams): String = {
+      stringBinder.unbind("backCode", queryParams.backCode.getOrElse(""))
     }
   }
 }
