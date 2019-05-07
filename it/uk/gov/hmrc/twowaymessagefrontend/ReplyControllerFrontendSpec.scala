@@ -46,17 +46,6 @@ class ReplyControllerFrontendSpec extends ControllerSpecBase  with MockAuthConne
 
   when(twoWayMessageConnector.getMessages(any())(any())).thenReturn(Future.successful(List()))
 
-  override lazy val injector = new GuiceApplicationBuilder()
-    .configure(Configuration("metrics.enabled" -> false, "testserver.port" -> 8990))
-    .overrides(new AbstractModule with ScalaModule {
-      override def configure(): Unit = {
-        bind[AuthConnector].toInstance(mockAuthConnector)
-        bind[PreferencesConnector].toInstance(preferencesConnector)
-        bind[TwoWayMessageConnector].toInstance(twoWayMessageConnector)
-      }
-    })
-    .injector()
-
   override def fakeApplication(): Application = {
     new GuiceApplicationBuilder()
       .configure(Configuration("metrics.enabled" -> false))
@@ -69,7 +58,7 @@ class ReplyControllerFrontendSpec extends ControllerSpecBase  with MockAuthConne
       }).build()
   }
 
-  val replyController = injector.instanceOf[ReplyController]
+  val replyController = app.injector.instanceOf[ReplyController]
 
   "Frontend test" should {
     "find the home page ok" in {
@@ -98,7 +87,6 @@ class ReplyControllerFrontendSpec extends ControllerSpecBase  with MockAuthConne
       go to s"http://localhost:$port/two-way-message-frontend/message/customer/p800/A1B2C3D4E5/reply"
 
       textArea("content").value = "A question from the customer"
-
 
       click on find(id("submit")).value
 

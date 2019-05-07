@@ -16,26 +16,22 @@
 
 package controllers
 
-import java.util.concurrent.TimeUnit
-
 import config.AppConfig
 import connectors.{PreferencesConnector, TwoWayMessageConnector}
 import forms.EnquiryFormProvider
 import javax.inject.{Inject, Singleton}
+import models.{EnquiryDetails, Identifier, MessageError}
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.mvc.{Action, AnyContent, QueryStringBindable, Request}
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
-import play.api.mvc.{Action, AnyContent, Request}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html.{enquiry, enquiry_submitted, error_template}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
-import models.{EnquiryDetails, Identifier, MessageError}
-import org.omg.PortableInterceptor.SUCCESSFUL
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-
-import ExecutionContext.Implicits.global
 
 @Singleton
 class EnquiryController @Inject()(appConfig: AppConfig,
@@ -45,6 +41,8 @@ class EnquiryController @Inject()(appConfig: AppConfig,
                                   twoWayMessageConnector: TwoWayMessageConnector,
                                   preferencesConnector: PreferencesConnector)
   extends FrontendController with AuthorisedFunctions with I18nSupport {
+
+  private final val BACKCODE = "backCode"
 
   val form: Form[EnquiryDetails] = formProvider()
 
@@ -56,7 +54,8 @@ class EnquiryController @Inject()(appConfig: AppConfig,
             waitTime <- twoWayMessageConnector.getWaitTime(queue)
             email <- preferencesConnector.getPreferredEmail(nino)
           } yield {
-            Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", email), waitTime))
+            val backCode:Option[String] = request.queryString.get(BACKCODE).map( _.head)
+            Ok(enquiry(appConfig, form, EnquiryDetails(queue, "", "", email, backCode), waitTime))
           }
         case _ => Future.successful(Forbidden)
       } recoverWith {
@@ -113,4 +112,23 @@ class EnquiryController @Inject()(appConfig: AppConfig,
         formWithErrors.data.getOrElse("question", ""),
         formWithErrors.data.getOrElse("email", ""))
     }
+
+
+  case class QueryParams( backCode: Option[String] = None)
+
+  implicit def queryStringBindable(implicit stringBinder: QueryStringBindable[String]) = new QueryStringBindable[QueryParams] {
+    override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, QueryParams]] = {
+      for {
+        backCode <- stringBinder.bind("backCode", params)
+      } yield {
+        backCode match {
+          case Right(backCode) => Right(QueryParams(Some(backCode)))
+          case _ => Left("Unable find backCode value")
+        }
+      }
+    }
+    override def unbind(key: String, queryParams: QueryParams): String = {
+      stringBinder.unbind("backCode", queryParams.backCode.getOrElse(""))
+    }
+  }
 }
