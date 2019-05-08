@@ -129,7 +129,7 @@ class EnquiryControllerFrontendSpec extends ControllerSpecBase  with MockAuthCon
 
       go to s"http://localhost:$port/two-way-message-frontend/message/customer/p800/5c8a31931d00000b00a30bdc/reply"
 
-      textArea("content").value = "A question from the customer"
+      textArea("reply-input").value = "A question from the customer"
 
       click on find(id("submit")).value
 

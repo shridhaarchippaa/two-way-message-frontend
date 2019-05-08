@@ -106,7 +106,7 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
     val messageId = "543e92e101000001006300c9"
     val fakeRequestWithForm = FakeRequest(routes.ReplyController.onSubmit(queueId, messageId))
     val requestWithFormData: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
-      "content" -> "test content"
+      "reply-input" -> "test content"
     )
     val replyDetails = ReplyDetails(
       "test content"
@@ -118,7 +118,7 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
     )
 
     val badRequestWithEmptyFormData: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
-      "content" -> ""
+      "reply-input" -> ""
     )
 
     "return 200 (OK) when presented with a valid Nino (HMRC-NI) credentials and valid payload" in {
@@ -166,7 +166,7 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
       status(result) shouldBe Status.BAD_REQUEST
 
       val document = Jsoup.parse(contentAsString(result))
-      document.getElementsByClass("error-summary-list").html() shouldBe """<li><a href="#content">Please enter a value</a></li>"""
+      document.getElementsByClass("error-summary-list").html() shouldBe """<li><a href="#reply-input">Please enter a value</a></li>"""
     }
 
     "return 200 (OK) when two-way-message service returns a different status than 201 (CREATED)" in {
@@ -194,13 +194,13 @@ class ReplyControllerSpec extends ControllerSpecBase with MockAuthConnector {
       mockAuthorise(Enrolment("HMRC-NI"))(Future.successful(Some(nino.value)))
 
       val requestWithLongContent: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestWithForm.withFormUrlEncodedBody(
-        "content" -> "a" * (100000 + 1)
+        "reply-input" -> "a" * (100000 + 1)
       )
 
       val result = await(call(controller.onSubmit(queueId, messageId), requestWithLongContent))
       result.header.status shouldBe Status.BAD_REQUEST
       val document = Jsoup.parse(contentAsString(result))
-      document.getElementsByClass("error-summary-list").html() shouldBe "<li><a href=\"#content\">Maximum length is 100,000</a></li>"
+      document.getElementsByClass("error-summary-list").html() shouldBe "<li><a href=\"#reply-input\">Maximum length is 100,000</a></li>"
     }
   }
 

@@ -93,7 +93,7 @@ class ReplyController @Inject()(appConfig: AppConfig,
 
   private def rebuildFailedForm(formWithErrors: Form[ReplyDetails]) = {
     ReplyDetails(
-      formWithErrors.data.getOrElse("content", "")
+      formWithErrors.data.getOrElse("reply-input", "")
     )
   }
 }

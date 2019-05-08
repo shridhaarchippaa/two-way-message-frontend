@@ -84,9 +84,9 @@ class ReplyControllerFrontendSpec extends ControllerSpecBase  with MockAuthConne
         Future.successful(HttpResponse(play.api.http.Status.CREATED, Some(x)))
       }
 
-      go to s"http://localhost:$port/two-way-message-frontend/message/customer/p800/A1B2C3D4E5/reply"
+      go to s"http://localhost:$port/two-way-message-frontend/message/customer/p800/A1B2C3D4E5/reply#reply-input"
 
-      textArea("content").value = "A question from the customer"
+      textArea("reply-input").value = "A question from the customer"
 
       click on find(id("submit")).value
 
