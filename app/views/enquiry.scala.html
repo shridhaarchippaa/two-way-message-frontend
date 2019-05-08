@@ -34,7 +34,7 @@
 
     <p class="indent">Our team will reply within @messages("reply.wait.time")</p>
 
-    @helpers.form(action = EnquiryController.onSubmit(), 'autoComplete -> "off") {
+    @helpers.form(action = EnquiryController.onSubmit(), 'autoComplete -> "off", 'novalidate -> "off"){
 
         <input type="hidden" id='@{form("queue").id}' name='@{form("queue").name}' value="@{defaultEnquiryDetails.queue}">
 
