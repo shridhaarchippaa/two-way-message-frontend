@@ -40,7 +40,7 @@ object DateUtils {
             details =>
                 details.`type` match {
                     case MessageType.Customer => s"You sent this message on ${messageDate}"
-                    case MessageType.Advisor => s"This message was sent to you on ${messageDate}"
+                    case MessageType.Adviser => s"This message was sent to you on ${messageDate}"
                     case _ => defaultDateText(messageDate)
                 }
         }.getOrElse(defaultDateText(messageDate))
