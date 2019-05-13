@@ -24,7 +24,7 @@ trait Fixtures {
   val testConversationItem = ConversationItem(
     subject = "test subject",
     body = Some(ConversationItemDetails(
-      `type` = MessageType.Advisor,
+      `type` = MessageType.Adviser,
       form = FormId.Reply,
       issueDate = Some(LocalDate.now),
       replyTo = Some("reply-to-id"),
